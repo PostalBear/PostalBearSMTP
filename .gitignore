@@ -1,3 +1,23 @@
+#Ignore Maven stuff
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+#Ignore IntelliJ IDEA
+.idea/
+*.iml
+
+# =========================
+# Operating System Files
+# =========================
+
+# =========================
+# Windows
+# =========================
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
@@ -18,9 +38,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # =========================
-# Operating System Files
-# =========================
-
 # OSX
 # =========================
 
