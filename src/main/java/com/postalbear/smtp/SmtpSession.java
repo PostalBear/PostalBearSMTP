@@ -8,38 +8,38 @@ package com.postalbear.smtp;
 public interface SmtpSession extends ConfigurationProvider, SmtpTransactionHandler {
 
     /**
-     * Marks session as successfully authenticated
+     * Marks session as successfully authenticated.
      */
     void setAuthenticated();
 
     /**
-     * Check that current SMTP session is authenticated
+     * Check that current SMTP session is authenticated.
      *
      * @return true if authenticated
      */
     boolean isAuthenticated();
 
     /**
-     * Check whether mail transaction is in progress
+     * Check whether mail transaction is in progress.
      *
      * @return true if transaction is in progress
      */
     boolean isMailTransactionInProgress();
 
     /**
-     * Reset state of SmtpSession
+     * Reset state of current SMTP transaction.
      */
     void resetMailTransaction();
 
     /**
-     * Start new mail transaction
+     * Start new mail transaction.
      */
     void startMailTransaction();
 
     /**
-     * Return number of recipients
+     * Return number of recipients.
      *
-     * @return
+     * @return count of declared recipients.
      */
     int getRecipientsCount();
 
@@ -55,7 +55,7 @@ public interface SmtpSession extends ConfigurationProvider, SmtpTransactionHandl
      * Send response to the client.
      * Useful if invoker need custom format of response message.
      *
-     * @param message
+     * @param message SMTP line to be set to client
      */
     void sendResponseAsString(String message);
 
@@ -70,9 +70,9 @@ public interface SmtpSession extends ConfigurationProvider, SmtpTransactionHandl
     void closeSession();
 
     /**
-     * Check whether connection is plain SMTP connection or security layer has been already installed
+     * Check whether connection is plain SMTP connection or security layer has been already installed.
      *
-     * @return
+     * @return true if SSL/TLS is used
      */
     boolean isConnectionSecured();
 
