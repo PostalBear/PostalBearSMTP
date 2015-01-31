@@ -1,6 +1,6 @@
 package com.postalbear.smtp.grizzly;
 
-import com.postalbear.smtp.SmtpServerConfiguration;
+import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.command.Command;
 import com.postalbear.smtp.command.CommandHandler;
 import com.postalbear.smtp.exception.SmtpException;
@@ -11,29 +11,26 @@ import org.glassfish.grizzly.filterchain.NextAction;
 
 import java.io.IOException;
 
-import static com.postalbear.smtp.grizzly.GrizzlySmtpSession.getSmtpSession;
 import static com.postalbear.smtp.grizzly.SmtpInputBuffer.getSmtpInputBuffer;
 
 /**
- * Filter for parsing and processing SMTP commands received from client.
+ * Filter intended to parse and process SMTP commands received from client.
  *
  * @author Grigory Fadeev
  */
 public class SmtpFilter extends BaseFilter {
 
-    private final SmtpServer server;
-    private final SmtpServerConfiguration configuration;
+    private final SmtpSessionProvider sessionProvider;
     private final CommandHandler commandHandler;
 
-    public SmtpFilter(@NonNull SmtpServer server, @NonNull CommandHandler commandHandler) {
-        this.server = server;
+    public SmtpFilter(@NonNull SmtpSessionProvider sessionProvider, @NonNull CommandHandler commandHandler) {
+        this.sessionProvider = sessionProvider;
         this.commandHandler = commandHandler;
-        this.configuration = server.getConfiguration();
     }
 
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
-        GrizzlySmtpSession session = getSmtpSession(server, ctx);
+        SmtpSession session = sessionProvider.getSmtpSession(ctx);
         SmtpInputBuffer smtpInput = getSmtpInputBuffer(ctx);
         smtpInput.appendDataChunk(ctx.getMessage());
         try {
@@ -45,7 +42,7 @@ public class SmtpFilter extends BaseFilter {
         return ctx.getStopAction();
     }
 
-    public void processInput(GrizzlySmtpSession session, SmtpInputBuffer smtpInput) throws IOException {
+    public void processInput(SmtpSession session, SmtpInputBuffer smtpInput) throws IOException {
         try {
             while (smtpInput.hasNextSmtpLine()) {
                 String smtpLine = smtpInput.getSmtpLine();

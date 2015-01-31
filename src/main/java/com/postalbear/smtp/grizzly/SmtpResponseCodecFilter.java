@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author Grigory Fadeev
  */
-public class SmtpLineCodecFilter extends BaseFilter {
+public class SmtpResponseCodecFilter extends BaseFilter {
 
     private final SmtpLineEncoder encoder = new SmtpLineEncoder();
 

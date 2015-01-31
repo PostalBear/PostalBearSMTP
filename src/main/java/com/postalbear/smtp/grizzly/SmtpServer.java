@@ -20,12 +20,15 @@ public class SmtpServer implements ConfigurationProvider {
 
     private final SmtpServerConfiguration configuration;
     private final TCPNIOTransport transport;
+    //
+    private SmtpSessionProvider smtpSessionProvider;
     // chain and filters
     private FilterChain defaultChain;
     private SSLFilter sslFilter;
-    private SmtpLineCodecFilter smtpLineCodecFilter;
-    private WelcomeBannerFilter welcomeBannerFilter;
+    private SmtpResponseCodecFilter smtpResponseCodecFilter;
+    private SessionStarterFilter sessionStarterFilter;
     private SmtpFilter smtpFilter;
+
 
     public SmtpServer(@Nonnull SmtpServerConfiguration configuration,
                       @Nonnull TCPNIOTransport transport) {
@@ -41,6 +44,7 @@ public class SmtpServer implements ConfigurationProvider {
     }
 
     private void initFilterChain() {
+        smtpSessionProvider = new SmtpSessionProvider(this);
         // Create a FilterChain using FilterChainBuilder
         FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
         filterChainBuilder.add(new ExceptionLoggingFilter());
@@ -48,20 +52,20 @@ public class SmtpServer implements ConfigurationProvider {
         // for reading and writing data to the connection
         filterChainBuilder.add(new TransportFilter());
 
-        smtpLineCodecFilter = new SmtpLineCodecFilter();
-        welcomeBannerFilter = new WelcomeBannerFilter(this);
-        smtpFilter = new SmtpFilter(this, CommandRegistry.getCommandHandler());
+        smtpResponseCodecFilter = new SmtpResponseCodecFilter();
+        sessionStarterFilter = new SessionStarterFilter(smtpSessionProvider, getConfiguration());
+        smtpFilter = new SmtpFilter(smtpSessionProvider, CommandRegistry.getCommandHandler());
 
         if (configuration.getSslConfig() != null) {
             sslFilter = new SSLFilter(configuration.getSslConfig(), null);
             if (configuration.isSmtpsEnabled()) {
-                sslFilter.addHandshakeListener(welcomeBannerFilter);
+                sslFilter.addHandshakeListener(sessionStarterFilter);
                 filterChainBuilder.add(sslFilter);
             }
         }
 
-        filterChainBuilder.add(smtpLineCodecFilter);
-        filterChainBuilder.add(welcomeBannerFilter);
+        filterChainBuilder.add(smtpResponseCodecFilter);
+        filterChainBuilder.add(sessionStarterFilter);
         filterChainBuilder.add(smtpFilter);
 
         defaultChain = filterChainBuilder.build();
