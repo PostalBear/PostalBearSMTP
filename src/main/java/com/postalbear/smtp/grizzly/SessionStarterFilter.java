@@ -21,8 +21,8 @@ import static org.glassfish.grizzly.attributes.AttributeBuilder.DEFAULT_ATTRIBUT
  */
 public class SessionStarterFilter extends BaseFilter implements SSLBaseFilter.HandshakeListener {
 
-    //Flag to cover STARTTLS case to do not send welcome banner twice
-    public static final Attribute<Boolean> WELCOME_BANNER_SHOWN_ATTRIBUTE =
+    //Flag to cover STARTTLS case, to do not send welcome banner twice
+    private static final Attribute<Boolean> WELCOME_BANNER_SHOWN_ATTRIBUTE =
             DEFAULT_ATTRIBUTE_BUILDER.createAttribute("WelcomeBannerShown", (NullaryFunction<Boolean>) () -> false);
 
     private final SmtpServerConfiguration configuration;
@@ -45,37 +45,40 @@ public class SessionStarterFilter extends BaseFilter implements SSLBaseFilter.Ha
         SmtpSession session = sessionProvider.startNewSession(ctx);
         /*
         * Show welcome banner only for plain SMTP connections,
-        * for TLS connections banner should be shown only after handshake is done.
+        * for TLS connections banner should be shown only after handshake is done,
+        * otherwise will brake handshake.
         */
-        if (!session.isConnectionSecured()) {
+        if (isSmtpCase(session)) {
             showServerBanner(connection, session);
         }
         return ctx.getStopAction();
+    }
+
+    @Override
+    public void onComplete(Connection connection) {
+        FilterChainContext ctx = createContext(connection, FilterChainContext.Operation.NONE);
+        boolean isStartTls = isStartTlsCase(connection);
+        //RFC 3207 explicitly stated that server must reset to initial state after STARTTLS
+        SmtpSession session = (isStartTls) ? sessionProvider.startNewSession(ctx) : sessionProvider.getSmtpSession(ctx);
+        //avoid showing welcome banner twice for plain SMTP + STARTTLS case
+        if (!isStartTls) {
+            showServerBanner(connection, session);
+        }
     }
 
     private void showServerBanner(Connection connection, SmtpSession session) {
         String welcomeMessage = configuration.getHostName() + " ESMTP " + configuration.getSoftwareName();
         session.sendResponse(220, welcomeMessage);
         session.flush();
-        markWelcomeBannerAsShown(connection);
-    }
-
-    @Override
-    public void onComplete(Connection connection) {
-        FilterChainContext ctx = createContext(connection, FilterChainContext.Operation.NONE);
-        SmtpSession session = sessionProvider.startNewSession(ctx);
-        //to avoid showing welcome banner twice in case of plain SMTP + STARTTLS
-        if (!isWelcomeBannerShown(connection)) {
-            showServerBanner(connection, session);
-        }
-    }
-
-    private boolean isWelcomeBannerShown(Connection connection) {
-        return WELCOME_BANNER_SHOWN_ATTRIBUTE.get(connection);
-    }
-
-    private void markWelcomeBannerAsShown(Connection connection) {
         WELCOME_BANNER_SHOWN_ATTRIBUTE.set(connection, true);
+    }
+
+    private boolean isSmtpCase(SmtpSession session) {
+        return !session.isConnectionSecured();
+    }
+
+    private boolean isStartTlsCase(Connection connection) {
+        return WELCOME_BANNER_SHOWN_ATTRIBUTE.get(connection);
     }
 
     @Override
