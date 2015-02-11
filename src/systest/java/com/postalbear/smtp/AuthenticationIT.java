@@ -9,10 +9,7 @@ import com.sun.mail.smtp.SMTPSendFailedException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
-import javax.mail.AuthenticationFailedException;
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
+import javax.mail.*;
 import java.util.Properties;
 
 import static javax.mail.Session.getInstance;
@@ -121,15 +118,18 @@ public class AuthenticationIT extends AbstractServerIT {
         Properties properties = getSessionProperties("smtp");
         properties.setProperty("mail.smtp.auth", "true");
         properties.setProperty("mail.smtp.auth.mechanisms", "DIGEST-MD5");
-        Session session = getInstance(properties, new TestAuthenticator());
 
-        SMTPMessage message = new SMTPMessage(session, IOUtils.toInputStream(MESSAGE_CONTENT));
-        message.setEnvelopeFrom(sender.toString());
+        Session session = getInstance(properties, new TestAuthenticator());
+        session.setDebug(true);
+        session.setDebugOut(System.out);
+        Transport transport = session.getTransport();
         try {
-            sendMessage(session, message, recipient);
+            transport.connect();
         } catch (AuthenticationFailedException ex) {
             assertEquals("No authentication mechansims supported by both server and client", ex.getMessage());
             throw ex;
+        } finally {
+            transport.close();
         }
     }
 
