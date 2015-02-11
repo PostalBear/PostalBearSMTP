@@ -46,9 +46,10 @@ public class CommandRegistry {
 
         /**
          * Add command to register.
-         * @param command to add
+         *
+         * @param command          to add
          * @param checkForStartTLS whether to enforce STARTTLS
-         * @param checkForAuth whether to enforce AUTH
+         * @param checkForAuth     whether to enforce AUTH
          */
         public void registerCommand(Command command, boolean checkForStartTLS, boolean checkForAuth) {
             String name = command.getName().toUpperCase(Locale.ENGLISH);

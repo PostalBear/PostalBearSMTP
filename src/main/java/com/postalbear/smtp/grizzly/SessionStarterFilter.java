@@ -1,29 +1,23 @@
 package com.postalbear.smtp.grizzly;
 
 import com.postalbear.smtp.SmtpServerConfiguration;
-import com.postalbear.smtp.SmtpSession;
 import org.glassfish.grizzly.Connection;
-import org.glassfish.grizzly.attributes.Attribute;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 import org.glassfish.grizzly.ssl.SSLBaseFilter;
-import org.glassfish.grizzly.utils.NullaryFunction;
 
 import java.io.IOException;
 
-import static org.glassfish.grizzly.attributes.AttributeBuilder.DEFAULT_ATTRIBUTE_BUILDER;
-
 /**
  * Filter intended to start new SMTP session and show welcome banner.
+ * <p>
+ * Show welcome banner only for plain SMTP connections,
+ * for TLS connections banner should be shown only after handshake is done, otherwise will brake handshake.
  *
  * @author Grigory Fadeev
  */
 public class SessionStarterFilter extends BaseFilter implements SSLBaseFilter.HandshakeListener {
-
-    //Flag to cover STARTTLS case, to do not send welcome banner twice
-    private static final Attribute<Boolean> WELCOME_BANNER_SHOWN_ATTRIBUTE =
-            DEFAULT_ATTRIBUTE_BUILDER.createAttribute("WelcomeBannerShown", (NullaryFunction<Boolean>) () -> false);
 
     private final SmtpServerConfiguration configuration;
     private final SmtpSessionProvider sessionProvider;
@@ -41,44 +35,41 @@ public class SessionStarterFilter extends BaseFilter implements SSLBaseFilter.Ha
 
     @Override
     public NextAction handleAccept(FilterChainContext ctx) throws IOException {
-        Connection connection = ctx.getConnection();
-        SmtpSession session = sessionProvider.startNewSession(ctx);
-        /*
-        * Show welcome banner only for plain SMTP connections,
-        * for TLS connections banner should be shown only after handshake is done,
-        * otherwise will brake handshake.
-        */
+        GrizzlySmtpSession session = sessionProvider.startNewSession(ctx);
         if (isSmtpCase(session)) {
-            showServerBanner(connection, session);
+            showServerBanner(session);
         }
         return ctx.getStopAction();
     }
 
-    @Override
-    public void onComplete(Connection connection) {
-        FilterChainContext ctx = createContext(connection, FilterChainContext.Operation.NONE);
-        boolean isStartTls = isStartTlsCase(connection);
-        //RFC 3207 explicitly stated that server must reset to initial state after STARTTLS
-        SmtpSession session = (isStartTls) ? sessionProvider.startNewSession(ctx) : sessionProvider.getSmtpSession(ctx);
-        //avoid showing welcome banner twice for plain SMTP + STARTTLS case
-        if (!isStartTls) {
-            showServerBanner(connection, session);
-        }
-    }
-
-    private void showServerBanner(Connection connection, SmtpSession session) {
-        String welcomeMessage = configuration.getHostName() + " ESMTP " + configuration.getSoftwareName();
-        session.sendResponse(220, welcomeMessage);
-        session.flush();
-        WELCOME_BANNER_SHOWN_ATTRIBUTE.set(connection, true);
-    }
-
-    private boolean isSmtpCase(SmtpSession session) {
+    private boolean isSmtpCase(GrizzlySmtpSession session) {
         return !session.isConnectionSecured();
     }
 
-    private boolean isStartTlsCase(Connection connection) {
-        return WELCOME_BANNER_SHOWN_ATTRIBUTE.get(connection);
+    /**
+     * Method will be invoked when TLS handshake is complete.
+     * There are two possible reasons for initiating secured connection:
+     * 1. STARTTLS was requested by client (for this case we need to reset server state as requested by RFC3207).
+     * 2. This is SMTPS connection from begining.
+     *
+     * @param connection
+     */
+    @Override
+    public void onComplete(Connection connection) {
+        FilterChainContext ctx = createContext(connection, FilterChainContext.Operation.NONE);
+        GrizzlySmtpSession session = sessionProvider.getSmtpSession(ctx);
+        if (!session.isWelcomeBannerShown()) {
+            showServerBanner(session);
+        } else {
+            sessionProvider.startNewSession(ctx).markWelcomeBannerAsShown();
+        }
+    }
+
+    private void showServerBanner(GrizzlySmtpSession session) {
+        String welcomeMessage = configuration.getHostName() + " ESMTP " + configuration.getSoftwareName();
+        session.sendResponse(220, welcomeMessage);
+        session.flush();
+        session.markWelcomeBannerAsShown();
     }
 
     @Override

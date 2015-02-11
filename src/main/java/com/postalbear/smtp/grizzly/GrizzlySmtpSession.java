@@ -20,14 +20,36 @@ public class GrizzlySmtpSession extends AbstractSmtpSession {
     private final List<String> responseBuffer = new ArrayList<>();
     private final SmtpServer server;
     private FilterChainContext context;
+    //session state
+    private boolean welcomeBannerShown = false;
 
     public GrizzlySmtpSession(SmtpServer server) {
         super(server);
         this.server = server;
     }
 
-    void refreshContext(FilterChainContext actualContex) {
-        this.context = actualContex;
+    public boolean isWelcomeBannerShown() {
+        return welcomeBannerShown;
+    }
+
+    public void markWelcomeBannerAsShown() {
+        this.welcomeBannerShown = true;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public boolean isConnectionSecured() {
+        return server.isConnectionSecured(context);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public void startTls() {
+        server.installSslFilter(context);
     }
 
     /**
@@ -63,19 +85,7 @@ public class GrizzlySmtpSession extends AbstractSmtpSession {
         context.getConnection().closeSilently();
     }
 
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public boolean isConnectionSecured() {
-        return server.isConnectionSecured(context);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public void startTls() {
-        server.installSslFilter(context);
+    void refreshContext(FilterChainContext actualContex) {
+        this.context = actualContex;
     }
 }

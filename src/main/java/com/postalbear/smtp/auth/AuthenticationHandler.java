@@ -2,6 +2,7 @@ package com.postalbear.smtp.auth;
 
 import com.postalbear.smtp.exception.SmtpException;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import java.io.IOException;
 
 /**
@@ -13,14 +14,16 @@ import java.io.IOException;
  * @author Scott Hernandez
  * @author Grigory Fadeev
  */
+@NotThreadSafe
 public interface AuthenticationHandler {
 
     /**
+     * Starts authentication process.
      * Initially called using an input string in the RFC4954 form: "AUTH \<mechanism\> [initial-response]".
      *
      * @param smtpLine line to process
-     * @throws SmtpException       if authentication attempt failed
-     * @throws java.io.IOException in case if can't read/write data
+     * @throws SmtpException if authentication attempt failed
+     * @throws IOException   if failed to read data
      */
-    void auth(String smtpLine) throws SmtpException, IOException;
+    void start(String smtpLine) throws SmtpException, IOException;
 }

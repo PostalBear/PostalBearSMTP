@@ -19,6 +19,7 @@ import static org.glassfish.grizzly.attributes.AttributeBuilder.DEFAULT_ATTRIBUT
 
 /**
  * Hack for Pipelining support.
+ * <p>
  * By standard client might send next transaction immediately after CRLF.CRLF for DATA command.
  * So somehow we need to push back this portion of data for further processing by SmtpFilter.
  * This class is introduced especially for this purpose, and for this moment i don't have better idea.
@@ -28,10 +29,10 @@ import static org.glassfish.grizzly.attributes.AttributeBuilder.DEFAULT_ATTRIBUT
 @NotThreadSafe
 public class SmtpInputBuffer implements SmtpInput {
 
-    private static final Attribute<SmtpInputBuffer> SMTP_INPUT_BUFFER = DEFAULT_ATTRIBUTE_BUILDER.createAttribute("SmtpInputBuffer");
+    private static final Attribute<SmtpInputBuffer> SMTP_INPUT_BUFFER =
+            DEFAULT_ATTRIBUTE_BUILDER.createAttribute("SmtpInputBuffer");
 
     private final SmtpLineDecoder decoder = new SmtpLineDecoder();
-    private final BlockingReader blockingLineReader = new BlockingReader();
     private FilterChainContext context;
     private CompositeBuffer buffer;
 
@@ -83,7 +84,7 @@ public class SmtpInputBuffer implements SmtpInput {
 
     @Override
     public SmtpLineReader getSmtpLineReader() {
-        return blockingLineReader;
+        return new BlockingReader();
     }
 
     private class BlockingReader implements SmtpLineReader {

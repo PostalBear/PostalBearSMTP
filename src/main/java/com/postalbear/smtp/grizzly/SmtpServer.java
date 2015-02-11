@@ -24,11 +24,12 @@ public class SmtpServer implements ConfigurationProvider {
     private SmtpSessionProvider smtpSessionProvider;
     // chain and filters
     private FilterChain defaultChain;
+    private TransportFilter transportFilter;
     private SSLFilter sslFilter;
     private SmtpResponseCodecFilter smtpResponseCodecFilter;
     private SessionStarterFilter sessionStarterFilter;
+    private ExceptionLoggingFilter exceptionLoggingFilter;
     private SmtpFilter smtpFilter;
-
 
     public SmtpServer(@Nonnull SmtpServerConfiguration configuration,
                       @Nonnull TCPNIOTransport transport) {
@@ -45,17 +46,14 @@ public class SmtpServer implements ConfigurationProvider {
 
     private void initFilterChain() {
         smtpSessionProvider = new SmtpSessionProvider(this);
-        // Create a FilterChain using FilterChainBuilder
         FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
-        filterChainBuilder.add(new ExceptionLoggingFilter());
-        // Add TransportFilter, which is responsible
-        // for reading and writing data to the connection
-        filterChainBuilder.add(new TransportFilter());
-
+        transportFilter = new TransportFilter();
         smtpResponseCodecFilter = new SmtpResponseCodecFilter();
+        exceptionLoggingFilter = new ExceptionLoggingFilter();
         sessionStarterFilter = new SessionStarterFilter(smtpSessionProvider, getConfiguration());
         smtpFilter = new SmtpFilter(smtpSessionProvider, CommandRegistry.getCommandHandler());
-
+        //assemble filter chain
+        filterChainBuilder.add(transportFilter);
         if (configuration.getSslConfig() != null) {
             sslFilter = new SSLFilter(configuration.getSslConfig(), null);
             if (configuration.isSmtpsEnabled()) {
@@ -63,11 +61,10 @@ public class SmtpServer implements ConfigurationProvider {
                 filterChainBuilder.add(sslFilter);
             }
         }
-
         filterChainBuilder.add(smtpResponseCodecFilter);
+        filterChainBuilder.add(exceptionLoggingFilter);
         filterChainBuilder.add(sessionStarterFilter);
         filterChainBuilder.add(smtpFilter);
-
         defaultChain = filterChainBuilder.build();
         transport.setProcessor(defaultChain);
     }
@@ -83,10 +80,9 @@ public class SmtpServer implements ConfigurationProvider {
 
     /**
      * Check whether connection is plain SMTP connection or secured by TLS.
-     * installed
      *
-     * @param context
-     * @return
+     * @param context which filter chain to inspect
+     * @return true if connection is secured
      */
     boolean isConnectionSecured(FilterChainContext context) {
         for (Filter filter : context.getFilterChain()) {
@@ -99,14 +95,16 @@ public class SmtpServer implements ConfigurationProvider {
 
     /**
      * Install security layer to connection.
+     *
+     * @param context for which filter chain should be changed
      */
     void installSslFilter(FilterChainContext context) {
         //filter chain has some internal dependency for filter index
         //if we just add new filter to current chain we will corrupt it.
-        FilterChain securedFilterChain = new DefaultFilterChain(defaultChain);
-        int transportFilterIndex = defaultChain.indexOfType(TransportFilter.class);
+        FilterChain modifiedFilterChain = new DefaultFilterChain(defaultChain);
+        int filterIndex = defaultChain.indexOf(transportFilter);
         // Add connection security layer to the chain
-        securedFilterChain.add(transportFilterIndex + 1, sslFilter);
-        context.getConnection().setProcessor(securedFilterChain);
+        modifiedFilterChain.add(filterIndex + 1, sslFilter);
+        context.getConnection().setProcessor(modifiedFilterChain);
     }
 }

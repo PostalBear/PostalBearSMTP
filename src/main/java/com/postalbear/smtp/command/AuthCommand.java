@@ -45,15 +45,9 @@ public class AuthCommand extends BaseCommand {
         if (arguments.size() < 2) {
             throw new SmtpException(501, "Syntax error: " + getName() + " mechanism [initial-response]");
         }
-
         String mechanism = arguments.get(1).toUpperCase(Locale.ENGLISH);
-
-        AuthenticationHandler authHandler = authFactory.create(mechanism, session, input);
-        //start authentication process
-        authHandler.auth(line);
-        session.setAuthenticated();
-        session.sendResponse(235, "2.7.0 Authentication successful.");
-        session.flush();
+        AuthenticationHandler handler = authFactory.create(mechanism, session, input.getSmtpLineReader());
+        handler.start(line);
     }
 
     /**

@@ -50,7 +50,7 @@ public class PlainAuthenticationHandlerTest {
 
         String smtpLine = "AUTH PLAIN " + secret;
 
-        handler.auth(smtpLine);
+        handler.start(smtpLine);
         verify(validator).validateCredentials(eq("login"), eq("password"));
     }
 
@@ -61,7 +61,7 @@ public class PlainAuthenticationHandlerTest {
 
         String smtpLine = "AUTH PLAIN";
 
-        handler.auth(smtpLine);
+        handler.start(smtpLine);
         verify(validator).validateCredentials(eq("login"), eq("password"));
         verify(session).sendResponse(eq(334), eq("OK"));
     }
@@ -73,7 +73,7 @@ public class PlainAuthenticationHandlerTest {
 
         String smtpLine = "AUTH PLAIN";
         try {
-            handler.auth(smtpLine);
+            handler.start(smtpLine);
             fail("SmtpException expected");
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
@@ -86,7 +86,7 @@ public class PlainAuthenticationHandlerTest {
         String secret = Base64.getEncoder().encodeToString(("authoritation login" + NUL + "password").getBytes());
         String smtpLine = "AUTH PLAIN " + secret;
         try {
-            handler.auth(smtpLine);
+            handler.start(smtpLine);
             fail("SmtpException expected");
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
@@ -98,7 +98,7 @@ public class PlainAuthenticationHandlerTest {
     public void testInvalidSecretBase64() throws Exception {
         String smtpLine = "AUTH PLAIN " + "=AAA==";
         try {
-            handler.auth(smtpLine);
+            handler.start(smtpLine);
             fail("SmtpException expected");
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
@@ -112,7 +112,7 @@ public class PlainAuthenticationHandlerTest {
         String secret = Base64.getEncoder().encodeToString(("authoritation" + NUL + "login" + NUL + "password").getBytes());
         String smtpLine = "AUTH PLAIN " + secret;
         try {
-            handler.auth(smtpLine);
+            handler.start(smtpLine);
             fail("SmtpException expected");
         } catch (SmtpException ex) {
             assertEquals(535, ex.getResponseCode());

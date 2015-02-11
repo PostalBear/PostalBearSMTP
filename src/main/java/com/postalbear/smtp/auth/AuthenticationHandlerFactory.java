@@ -1,7 +1,7 @@
 package com.postalbear.smtp.auth;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
+import com.postalbear.smtp.io.SmtpLineReader;
 
 import java.util.Set;
 
@@ -24,10 +24,10 @@ public interface AuthenticationHandlerFactory {
     /**
      * Create a fresh instance of authentication handler.
      *
-     * @param session   for which authentication process is started
      * @param mechanism to use
-     * @param input     line which triggered AUTH command
+     * @param session   for which authentication process is started
+     * @param reader    to get more data from client
      * @return authentication handler
      */
-    AuthenticationHandler create(String mechanism, SmtpSession session, SmtpInput input);
+    AuthenticationHandler create(String mechanism, SmtpSession session, SmtpLineReader reader);
 }

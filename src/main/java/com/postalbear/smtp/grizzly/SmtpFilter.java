@@ -33,16 +33,7 @@ public class SmtpFilter extends BaseFilter {
         SmtpSession session = sessionProvider.getSmtpSession(ctx);
         SmtpInputBuffer smtpInput = getSmtpInputBuffer(ctx);
         smtpInput.appendDataChunk(ctx.getMessage());
-        try {
-            processInput(session, smtpInput);
-        } catch (RuntimeException ex) {
-            session.sendResponse(421, "4.3.0 Mail system failure, closing transmission channel");
-            session.closeSession();
-        }
-        return ctx.getStopAction();
-    }
 
-    public void processInput(SmtpSession session, SmtpInputBuffer smtpInput) throws IOException {
         try {
             while (smtpInput.hasNextSmtpLine()) {
                 String smtpLine = smtpInput.getSmtpLine();
@@ -57,5 +48,6 @@ public class SmtpFilter extends BaseFilter {
             session.sendResponse(ex.getResponseCode(), ex.getResponseMessage());
             session.flush();
         }
+        return ctx.getStopAction();
     }
 }

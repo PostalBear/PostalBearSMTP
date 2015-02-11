@@ -6,6 +6,7 @@ import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.AuthenticationHandler;
 import com.postalbear.smtp.auth.AuthenticationHandlerFactory;
 import com.postalbear.smtp.exception.SmtpException;
+import com.postalbear.smtp.io.SmtpLineReader;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +36,8 @@ public class AuthCommandTest {
     private SmtpSession session;
     @Mock
     private SmtpInput input;
+    @Mock
+    private SmtpLineReader reader;
 
     private AuthCommand command = new AuthCommand();
 
@@ -42,7 +45,8 @@ public class AuthCommandTest {
     public void init() {
         when(session.isAuthenticated()).thenReturn(false);
         when(configuration.getAuthenticationFactory()).thenReturn(authenticationFactory);
-        when(authenticationFactory.create(Matchers.anyString(), eq(session), eq(input))).thenReturn(authHandler);
+        when(input.getSmtpLineReader()).thenReturn(reader);
+        when(authenticationFactory.create(Matchers.anyString(), eq(session), eq(reader))).thenReturn(authHandler);
     }
 
     @Test(expected = SmtpException.class)

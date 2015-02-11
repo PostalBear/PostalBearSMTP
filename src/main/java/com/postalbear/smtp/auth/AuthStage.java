@@ -9,7 +9,7 @@ import com.postalbear.smtp.exception.SmtpException;
  *
  * @author Grigory Fadeev
  */
-public interface AuthState {
+public interface AuthStage<T extends AbstractAuthenticationHandler> {
 
     /**
      * Implementations are intended to process given line.
@@ -18,5 +18,5 @@ public interface AuthState {
      * @return true if more lines are required
      * @throws SmtpException indicates about error in authentication process
      */
-    boolean handle(String line) throws SmtpException;
+    boolean handle(T handler, String line) throws SmtpException;
 }

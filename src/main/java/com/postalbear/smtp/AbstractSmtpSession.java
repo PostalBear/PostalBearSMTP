@@ -15,8 +15,9 @@ public abstract class AbstractSmtpSession implements SmtpSession {
 
     private final ConfigurationProvider configurationProvider;
     private SmtpServerConfiguration configuration;
+    //session state
     private String clientHelo;
-    private int recipientsCount = 0;
+    private int recipientsCount;
     private boolean authenticated;
     private SmtpTransactionHandler handler;
 
@@ -50,8 +51,8 @@ public abstract class AbstractSmtpSession implements SmtpSession {
 
     @Override
     public void resetMailTransaction() {
-        handler = null;
         recipientsCount = 0;
+        handler = null;
     }
 
     @Override

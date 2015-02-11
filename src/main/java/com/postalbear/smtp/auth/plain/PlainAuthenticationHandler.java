@@ -2,14 +2,13 @@ package com.postalbear.smtp.auth.plain;
 
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.AbstractAuthenticationHandler;
-import com.postalbear.smtp.auth.AuthState;
 import com.postalbear.smtp.auth.CredentialsValidator;
 import com.postalbear.smtp.exception.SmtpException;
 import com.postalbear.smtp.io.SmtpLineReader;
+import lombok.NonNull;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.Base64;
-import java.util.StringTokenizer;
 
 import static com.postalbear.smtp.SmtpConstants.UTF8_CHARSET;
 import static org.apache.commons.lang3.ArrayUtils.INDEX_NOT_FOUND;
@@ -22,20 +21,22 @@ import static org.apache.commons.lang3.ArrayUtils.indexOf;
  * @author Grigory Fadeev
  */
 @NotThreadSafe
-public class PlainAuthenticationHandler extends AbstractAuthenticationHandler {
+public class PlainAuthenticationHandler extends AbstractAuthenticationHandler<PlainAuthStage> {
 
-    /*see RFC4616 for more details*/
     private static final byte NUL = (byte) 0;
+    //
+    private final CredentialsValidator validator;
 
     /**
-     * Constructs new PlainAuthenticationHandler instance.
+     * Constructs instance of PlainAuthenticationHandler.
      *
-     * @param session
-     * @param validator to check credentials
+     * @param session   for which authentication is started
+     * @param reader    to get more data from the client
+     * @param validator to validate credentials
      */
-    public PlainAuthenticationHandler(SmtpSession session, SmtpLineReader inputLineReader, CredentialsValidator validator) {
-        super(session, inputLineReader, validator);
-        setState(new InitialAuthState());
+    public PlainAuthenticationHandler(SmtpSession session, SmtpLineReader reader, @NonNull CredentialsValidator validator) {
+        super(session, reader, PlainAuthStage.INITIAL);
+        this.validator = validator;
     }
 
     /**
@@ -44,7 +45,7 @@ public class PlainAuthenticationHandler extends AbstractAuthenticationHandler {
      * @param secret should be Base64 encoded string
      * @throws SmtpException indicates about error during authentication process
      */
-    private void handleSecret(String secret) throws SmtpException {
+    void handleSecret(String secret) throws SmtpException {
         byte[] decodedSecret = decodeSecret(secret);
         /*
          * RFC4616: The client presents the authorization identity (identity to act as), 
@@ -64,7 +65,7 @@ public class PlainAuthenticationHandler extends AbstractAuthenticationHandler {
         validateCredentials(authentication, password);
     }
 
-    private byte[] decodeSecret(String secret) throws SmtpException {
+    byte[] decodeSecret(String secret) throws SmtpException {
         try {
             return Base64.getDecoder().decode(secret);
         } catch (IllegalArgumentException ex) {
@@ -72,66 +73,24 @@ public class PlainAuthenticationHandler extends AbstractAuthenticationHandler {
         }
     }
 
-    private String getAuthentication(byte[] decodedSecret, int endOfAuthorization, int endOfAuthentication) {
+    String getAuthentication(byte[] decodedSecret, int endOfAuthorization, int endOfAuthentication) {
         return new String(decodedSecret,
                 endOfAuthorization + 1,
                 endOfAuthentication - (endOfAuthorization + 1),
                 UTF8_CHARSET);
     }
 
-    private String getPassword(byte[] decodedSecret, int endOfAuthentication) {
+    String getPassword(byte[] decodedSecret, int endOfAuthentication) {
         return new String(decodedSecret,
                 endOfAuthentication + 1,
                 decodedSecret.length - (endOfAuthentication + 1),
                 UTF8_CHARSET);
     }
 
-    /**
-     * First step of authentication process.
-     * Client might submit initial response within AUTH command,
-     * in such case credential validation will be performed immediately
-     * otherwise pass processing of next lines to @see ReadSecretState.
-     */
-    private class InitialAuthState implements AuthState {
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public boolean handle(String line) throws SmtpException {
-            StringTokenizer stk = new StringTokenizer(line);
-
-            stk.nextToken();//to skip AUTH keyword, not necessary to check it again
-            stk.nextToken();//to skip SASL mechanism (PLAIN), not necessary to check it again
-            /**
-             * Let's read the RFC2554 "initial-response" parameter
-             * The line could be in the form of "AUTH PLAIN <base64Secret>"
-             */
-            if (stk.hasMoreTokens()) {
-                handleSecret(stk.nextToken());
-                return false;
-            }
-            // the client did not submit an initial response, ask for next line for processing
-            sendResponse(334, "OK");
-            setState(new ReadSecretState());
-            return true;
+    void validateCredentials(String authentication, String password) throws SmtpException {
+        if (!validator.validateCredentials(authentication, password)) {
+            throw new SmtpException(535, "5.7.8 Authentication failure, invalid credentials");
         }
-    }
-
-    /**
-     * Second and last step of authentication process.
-     * If client did not submit secret during AUTH command, it should be done after receiving 334 OK from the server.
-     */
-    private class ReadSecretState implements AuthState {
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public boolean handle(String line) throws SmtpException {
-            StringTokenizer stk = new StringTokenizer(line);
-            handleSecret(stk.nextToken());
-            return false;
-        }
+        completeAuthentication();
     }
 }

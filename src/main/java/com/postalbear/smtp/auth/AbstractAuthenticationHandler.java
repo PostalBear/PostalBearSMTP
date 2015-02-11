@@ -12,66 +12,73 @@ import java.io.IOException;
  *
  * @author Grigory Fadeev
  */
-public abstract class AbstractAuthenticationHandler implements AuthenticationHandler {
+public abstract class AbstractAuthenticationHandler<T extends AuthStage> implements AuthenticationHandler {
 
     // RFC 2554 explicitly states this:
     private static final String CANCEL_COMMAND = "*";
     //
     private final SmtpSession session;
-    private final SmtpLineReader inputLineReader;
-    private final CredentialsValidator validator;
+    private final SmtpLineReader reader;
+    private T stage;
 
-    private AuthState state;
-
-    /**
-     * @param session
-     * @param inputLineReader
-     * @param validator
+    /*
+     * @param session      for which authentication process was started
+     * @param reader       to read additional data from client
+     * @param initialStage initial stage of authentication
      */
-    public AbstractAuthenticationHandler(@NonNull SmtpSession session,
-                                         @NonNull SmtpLineReader inputLineReader,
-                                         @NonNull CredentialsValidator validator) {
+    public AbstractAuthenticationHandler(@NonNull SmtpSession session, @NonNull SmtpLineReader reader, @NonNull T initialStage) {
         this.session = session;
-        this.inputLineReader = inputLineReader;
-        this.validator = validator;
+        this.reader = reader;
+        this.stage = initialStage;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void auth(String smtpLine) throws SmtpException, IOException {
-        String line = smtpLine;
-        while (true) {
-            if (CANCEL_COMMAND.equals(line)) {
-                throw new SmtpException(501, "Authentication canceled by client."); //see RFC4954
-            }
-            if (!getState().handle(line)) {
-                return;
-            }
-            line = inputLineReader.readLine();
+    public void start(String line) throws SmtpException, IOException {
+        String currentLine = line;
+        while (!checkCancelCommand(currentLine) && stage.handle(this, currentLine)) {
+            currentLine = reader.readLine();
         }
     }
 
-    protected void validateCredentials(String login, String password) throws SmtpException {
-        if (!validator.validateCredentials(login, password)) {
-            throw new SmtpException(535, "5.7.8 Authentication failure, invalid credentials");
+    /**
+     * @param line
+     * @return only to make javac happy.
+     */
+    private boolean checkCancelCommand(String line) {
+        if (CANCEL_COMMAND.equals(line)) {
+            throw new SmtpException(501, "Authentication canceled by client."); //see RFC4954
         }
+        return false;
     }
 
-    protected void sendResponse(int code, String message) {
+    /**
+     * Send response back to the client.
+     *
+     * @param code    result code
+     * @param message result message
+     */
+    public void sendResponse(int code, String message) {
         session.sendResponse(code, message);
         session.flush();
     }
 
-    protected void setState(@NonNull AuthState state) {
-        this.state = state;
+    /**
+     * Mark authentication process as finished.
+     */
+    public void completeAuthentication() {
+        session.setAuthenticated();
+        sendResponse(235, "2.7.0 Authentication successful.");
     }
 
-    private AuthState getState() {
-        if (state == null) {
-            throw new IllegalStateException("Authentication state not set");
-        }
-        return state;
+    /**
+     * Change stage of authentication process.
+     *
+     * @param stage new stage
+     */
+    public void setStage(@NonNull T stage) {
+        this.stage = stage;
     }
 }

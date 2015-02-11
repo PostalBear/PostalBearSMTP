@@ -2,9 +2,9 @@
  */
 package com.postalbear.smtp.auth;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
+import com.postalbear.smtp.io.SmtpLineReader;
 import lombok.NonNull;
 import org.apache.commons.lang3.Validate;
 
@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Facade class to provide possibility to configure and use several authentication factories.
+ * Facade class for several authentication factories.
  * Simply delegates authentication process to underlying factory depending on mechanism.
  *
  * @author Grigory Fadeev
@@ -50,10 +50,10 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
      * {@inheritDoc }
      */
     @Override
-    public AuthenticationHandler create(String mechanism, SmtpSession session, SmtpInput input) {
+    public AuthenticationHandler create(String mechanism, SmtpSession session, SmtpLineReader reader) {
         if (!getAuthenticationMechanisms().contains(mechanism)) {
             throw new SmtpException(504, "5.5.4 The requested authentication mechanism is not supported");
         }
-        return authMechanisms.get(mechanism).create(mechanism, session, input);
+        return authMechanisms.get(mechanism).create(mechanism, session, reader);
     }
 }

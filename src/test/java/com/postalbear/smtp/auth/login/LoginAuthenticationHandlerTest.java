@@ -48,7 +48,7 @@ public class LoginAuthenticationHandlerTest {
     public void testWithoutInitialSecret() throws Exception {
         String smtpLine = "AUTH LOGIN";
         when(lineReader.readLine()).thenReturn(LOGIN_ENCRYPTED, PASSWORD_ENCRYPTED);
-        handler.auth(smtpLine);
+        handler.start(smtpLine);
         verify(session).sendResponse(eq(334), eq("VXNlcm5hbWU6"));
         verify(session).sendResponse(eq(334), eq("UGFzc3dvcmQ6"));
         verify(validator).validateCredentials(eq(LOGIN), eq(PASSWORD));
@@ -58,7 +58,7 @@ public class LoginAuthenticationHandlerTest {
     public void testWithInitialSecret() throws Exception {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
         when(lineReader.readLine()).thenReturn(PASSWORD_ENCRYPTED);
-        handler.auth(smtpLine);
+        handler.start(smtpLine);
         verify(session).sendResponse(eq(334), eq("UGFzc3dvcmQ6"));
         verify(validator).validateCredentials(eq(LOGIN), eq(PASSWORD));
     }
@@ -67,7 +67,7 @@ public class LoginAuthenticationHandlerTest {
     public void testWithIncorrectUsernameFormat() throws Exception {
         String smtpLine = "AUTH LOGIN " + "=AAA==";
         try {
-            handler.auth(smtpLine);
+            handler.start(smtpLine);
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument: Username - not a valid Base64 string", ex.getResponseMessage());
@@ -79,7 +79,7 @@ public class LoginAuthenticationHandlerTest {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
         when(lineReader.readLine()).thenReturn("=AAA==");
         try {
-            handler.auth(smtpLine);
+            handler.start(smtpLine);
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument: Password - not a valid Base64 string", ex.getResponseMessage());

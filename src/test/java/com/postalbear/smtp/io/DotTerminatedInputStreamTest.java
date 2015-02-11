@@ -6,13 +6,9 @@ import com.postalbear.smtp.exception.SmtpException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
-import java.io.InputStream;
-
 import static com.postalbear.smtp.SmtpConstants.CRLF;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 /**
  * @author Grigory Fadeev

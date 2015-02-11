@@ -1,6 +1,5 @@
 package com.postalbear.smtp.grizzly;
 
-import com.postalbear.smtp.SmtpSession;
 import lombok.NonNull;
 import org.glassfish.grizzly.attributes.Attribute;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
@@ -29,7 +28,7 @@ public class SmtpSessionProvider {
      * @param ctx to be able to send/receive data from client
      * @return instance of session
      */
-    public SmtpSession startNewSession(FilterChainContext ctx) {
+    public GrizzlySmtpSession startNewSession(FilterChainContext ctx) {
         GrizzlySmtpSession session = new GrizzlySmtpSession(server);
         session.refreshContext(ctx);
         //associate session with connection
@@ -43,7 +42,7 @@ public class SmtpSessionProvider {
      * @param ctx to get current Connection from
      * @return instance of session
      */
-    public SmtpSession getSmtpSession(FilterChainContext ctx) {
+    public GrizzlySmtpSession getSmtpSession(FilterChainContext ctx) {
         GrizzlySmtpSession session = SMTP_SESSION_ATTRIBUTE.get(ctx.getConnection());
         if (session == null) {
             throw new IllegalStateException("No SMTP session is associated with given connection");
