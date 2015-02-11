@@ -33,13 +33,7 @@ public class TransportEncryptionIT extends AbstractServerIT {
             sslConf = new SSLEngineConfigurator(sslCon, false, false, false);
         }
     }
-
-    /**
-     * With current implementation of handleAccept method (of SMTPFilter) this test will always fail.
-     * Currently server always sends greeting banner even before handshake is done, obviously it's not what client expects.
-     *
-     * @throws Exception
-     */
+    
     @Test
     public void testSmtps() throws Exception {
         SmtpServerConfiguration.Builder builder = getSslAwareConfigurationBuilder();
