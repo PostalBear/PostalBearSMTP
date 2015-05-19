@@ -1,7 +1,6 @@
 package com.postalbear.smtp.auth;
 
 import com.postalbear.smtp.SmtpSession;
-import com.postalbear.smtp.io.SmtpLineReader;
 
 import java.util.Set;
 

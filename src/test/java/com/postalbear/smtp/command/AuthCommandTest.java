@@ -6,7 +6,6 @@ import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.AuthenticationHandler;
 import com.postalbear.smtp.auth.AuthenticationHandlerFactory;
 import com.postalbear.smtp.exception.SmtpException;
-import com.postalbear.smtp.io.SmtpLineReader;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

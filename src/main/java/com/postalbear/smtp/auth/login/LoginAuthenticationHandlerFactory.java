@@ -5,7 +5,6 @@ import com.postalbear.smtp.auth.AuthenticationHandler;
 import com.postalbear.smtp.auth.AuthenticationHandlerFactory;
 import com.postalbear.smtp.auth.CredentialsValidator;
 import com.postalbear.smtp.exception.SmtpException;
-import com.postalbear.smtp.io.SmtpLineReader;
 import lombok.NonNull;
 
 import java.util.Collections;

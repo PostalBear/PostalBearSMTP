@@ -9,6 +9,7 @@ import com.postalbear.smtp.exception.SmtpException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -35,13 +36,12 @@ public class PlainAuthenticationHandlerTest {
     private SmtpInput smtpInput;
     @Mock
     private CredentialsValidator validator;
-
+    @InjectMocks
     private PlainAuthenticationHandler handler;
 
     @Before
     public void init() {
         when(validator.validateCredentials(anyString(), anyString())).thenReturn(true);
-        handler = new PlainAuthenticationHandler(session, validator);
     }
 
     @Test
@@ -51,6 +51,7 @@ public class PlainAuthenticationHandlerTest {
 
         handler.start(smtpLine);
         verify(validator).validateCredentials(eq("login"), eq("password"));
+        verify(session).setAuthenticated();
     }
 
     @Test
@@ -63,6 +64,7 @@ public class PlainAuthenticationHandlerTest {
         handler.process(smtpInput, session);
         verify(validator).validateCredentials(eq("login"), eq("password"));
         verify(session).sendResponse(eq(334), eq("OK"));
+        verify(session).setAuthenticated();
     }
 
     @Test
@@ -75,22 +77,24 @@ public class PlainAuthenticationHandlerTest {
         handler.process(smtpInput, session);
         verify(session).sendResponse(eq(501), eq("Authentication canceled by client."));
         verify(validator, never()).validateCredentials(anyString(), anyString());
+        verify(session, never()).setAuthenticated();
     }
 
-    @Test
+    @Test(expected = SmtpException.class)
     public void testInvalidSecretFormat() throws Exception {
         String secret = Base64.getEncoder().encodeToString(("authoritation login" + NUL + "password").getBytes());
         String smtpLine = "AUTH PLAIN " + secret;
         try {
             handler.start(smtpLine);
-            fail("SmtpException expected");
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument, does not contain NUL", ex.getResponseMessage());
+            verify(session, never()).setAuthenticated();
+            throw ex;
         }
     }
 
-    @Test
+    @Test(expected = SmtpException.class)
     public void testInvalidSecretBase64() throws Exception {
         String smtpLine = "AUTH PLAIN " + "=AAA==";
         try {
@@ -99,10 +103,12 @@ public class PlainAuthenticationHandlerTest {
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument, not a valid Base64 string", ex.getResponseMessage());
+            verify(session, never()).setAuthenticated();
+            throw ex;
         }
     }
 
-    @Test
+    @Test(expected = SmtpException.class)
     public void testInvalidCredentials() throws Exception {
         when(validator.validateCredentials(eq("login"), eq("password"))).thenReturn(false);
         String secret = Base64.getEncoder().encodeToString(("authoritation" + NUL + "login" + NUL + "password").getBytes());
@@ -113,6 +119,8 @@ public class PlainAuthenticationHandlerTest {
         } catch (SmtpException ex) {
             assertEquals(535, ex.getResponseCode());
             assertEquals("5.7.8 Authentication failure, invalid credentials", ex.getResponseMessage());
+            verify(session, never()).setAuthenticated();
+            throw ex;
         }
     }
 

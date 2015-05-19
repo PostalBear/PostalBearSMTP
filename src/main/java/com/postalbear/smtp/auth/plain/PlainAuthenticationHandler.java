@@ -29,7 +29,7 @@ public class PlainAuthenticationHandler extends AbstractAuthenticationHandler<Pl
     /**
      * Constructs instance of PlainAuthenticationHandler.
      *
-     * @param session   for which authentication is started
+     * @param session   to authenticate
      * @param validator to validate credentials
      */
     public PlainAuthenticationHandler(SmtpSession session, @NonNull CredentialsValidator validator) {
@@ -63,7 +63,7 @@ public class PlainAuthenticationHandler extends AbstractAuthenticationHandler<Pl
         validateCredentials(authentication, password);
     }
 
-    byte[] decodeSecret(String secret) throws SmtpException {
+    private byte[] decodeSecret(String secret) throws SmtpException {
         try {
             return Base64.getDecoder().decode(secret);
         } catch (IllegalArgumentException ex) {
@@ -71,14 +71,14 @@ public class PlainAuthenticationHandler extends AbstractAuthenticationHandler<Pl
         }
     }
 
-    String getAuthentication(byte[] decodedSecret, int endOfAuthorization, int endOfAuthentication) {
+    private String getAuthentication(byte[] decodedSecret, int endOfAuthorization, int endOfAuthentication) {
         return new String(decodedSecret,
                           endOfAuthorization + 1,
                           endOfAuthentication - (endOfAuthorization + 1),
                           UTF8_CHARSET);
     }
 
-    String getPassword(byte[] decodedSecret, int endOfAuthentication) {
+    private String getPassword(byte[] decodedSecret, int endOfAuthentication) {
         return new String(decodedSecret,
                           endOfAuthentication + 1,
                           decodedSecret.length - (endOfAuthentication + 1),
@@ -86,9 +86,10 @@ public class PlainAuthenticationHandler extends AbstractAuthenticationHandler<Pl
     }
 
     void validateCredentials(String authentication, String password) throws SmtpException {
-        if (!validator.validateCredentials(authentication, password)) {
+        if (validator.validateCredentials(authentication, password)) {
+            markAsSuccessful();
+        } else {
             throw new SmtpException(535, "5.7.8 Authentication failure, invalid credentials");
         }
-        markAsSuccessful();
     }
 }

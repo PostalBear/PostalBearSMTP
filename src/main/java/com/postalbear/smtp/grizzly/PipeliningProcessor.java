@@ -1,7 +1,7 @@
 package com.postalbear.smtp.grizzly;
 
-import com.postalbear.smtp.SmtpProcessor;
 import com.postalbear.smtp.SmtpInput;
+import com.postalbear.smtp.SmtpProcessor;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.command.Command;
 import com.postalbear.smtp.command.CommandRegistry;

@@ -17,7 +17,6 @@ import java.util.Properties;
 import static javax.mail.Session.getInstance;
 import static org.apache.commons.lang3.StringUtils.chomp;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;

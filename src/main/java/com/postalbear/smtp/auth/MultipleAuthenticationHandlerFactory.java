@@ -4,7 +4,6 @@ package com.postalbear.smtp.auth;
 
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
-import com.postalbear.smtp.io.SmtpLineReader;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Locale;

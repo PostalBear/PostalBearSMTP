@@ -33,7 +33,7 @@ public class TransportEncryptionIT extends AbstractServerIT {
             sslConf = new SSLEngineConfigurator(sslCon, false, false, false);
         }
     }
-    
+
     @Test
     public void testSmtps() throws Exception {
         SmtpServerConfiguration.Builder builder = getSslAwareConfigurationBuilder();

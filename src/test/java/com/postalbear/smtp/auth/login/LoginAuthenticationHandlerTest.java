@@ -9,15 +9,14 @@ import com.postalbear.smtp.exception.SmtpException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Grigory
@@ -41,12 +40,12 @@ public class LoginAuthenticationHandlerTest {
     private SmtpInput smtpInput;
     @Mock
     private CredentialsValidator validator;
+    @InjectMocks
     private LoginAuthenticationHandler handler;
 
     @Before
     public void init() {
         when(validator.validateCredentials(anyString(), anyString())).thenReturn(true);
-        handler = new LoginAuthenticationHandler(session, validator);
     }
 
     @Test
@@ -60,6 +59,7 @@ public class LoginAuthenticationHandlerTest {
         handler.process(smtpInput, session);
         verify(session).sendResponse(eq(334), eq(PASSWORD_REQUEST));
         verify(validator).validateCredentials(eq(LOGIN), eq(PASSWORD));
+        verify(session).setAuthenticated();
     }
 
     @Test
@@ -71,6 +71,7 @@ public class LoginAuthenticationHandlerTest {
         handler.process(smtpInput, session);
         verify(session).sendResponse(eq(334), eq("UGFzc3dvcmQ6"));
         verify(validator).validateCredentials(eq(LOGIN), eq(PASSWORD));
+        verify(session).setAuthenticated();
     }
 
     @Test
@@ -83,9 +84,10 @@ public class LoginAuthenticationHandlerTest {
         handler.process(smtpInput, session);
         verify(session).sendResponse(eq(501), eq("Authentication canceled by client."));
         verify(validator, never()).validateCredentials(anyString(), anyString());
+        verify(session, never()).setAuthenticated();
     }
 
-    @Test
+    @Test(expected = SmtpException.class)
     public void testWithIncorrectUsernameFormat() throws Exception {
         String smtpLine = "AUTH LOGIN =AAA==";
         try {
@@ -93,19 +95,24 @@ public class LoginAuthenticationHandlerTest {
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument: Username - not a valid Base64 string", ex.getResponseMessage());
+            verify(session, never()).setAuthenticated();
+            throw ex;
         }
     }
 
-    @Test
+    @Test(expected = SmtpException.class)
     public void testWithIncorrectPasswordFormat() throws Exception {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
         handler.start(smtpLine);
 
+        when(smtpInput.getSmtpLine()).thenReturn("=AAA==");
         try {
-            when(smtpInput.getSmtpLine()).thenReturn("=AAA==");
+            handler.process(smtpInput, session);
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument: Password - not a valid Base64 string", ex.getResponseMessage());
+            verify(session, never()).setAuthenticated();
+            throw ex;
         }
     }
 

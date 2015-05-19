@@ -1,7 +1,7 @@
 package com.postalbear.smtp.auth;
 
-import com.postalbear.smtp.SmtpProcessor;
 import com.postalbear.smtp.SmtpInput;
+import com.postalbear.smtp.SmtpProcessor;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
 import lombok.NonNull;
@@ -37,9 +37,14 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
      * {@inheritDoc}
      */
     @Override
-    public void start(String line) throws SmtpException, IOException {
-        if (stage.handle(this, line)) {
-            session.setSmtpProcessor(this);
+    public void start(String line) throws SmtpException {
+        try {
+            if (stage.handle(this, line)) {
+                session.setSmtpProcessor(this);
+            }
+        } catch (SmtpException ex) {
+            session.setSmtpProcessor(null);
+            throw ex;
         }
     }
 
@@ -47,7 +52,7 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
      * {@inheritDoc}
      */
     @Override
-    public void process(SmtpInput smtpInput, SmtpSession session) throws IOException {
+    public void process(SmtpInput smtpInput, SmtpSession ignored) throws IOException {
         try {
             String line = smtpInput.getSmtpLine();
             if (checkIsAuthCanceled(line) || !stage.handle(this, line)) {
@@ -61,7 +66,7 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
 
     private boolean checkIsAuthCanceled(String line) {
         if (CANCEL_COMMAND.equals(line)) {
-            sendResponse(501, "Authentication canceled by client."); //see RFC4954
+            session.sendResponse(501, "Authentication canceled by client."); //see RFC4954
             return true;
         }
         return false;
@@ -78,19 +83,19 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
     }
 
     /**
-     * Mark authentication process as finished.
-     */
-    public void markAsSuccessful() {
-        session.setAuthenticated();
-        sendResponse(235, "2.7.0 Authentication successful.");
-    }
-
-    /**
      * Change stage of authentication process.
      *
      * @param stage new stage
      */
     public void setStage(@NonNull T stage) {
         this.stage = stage;
+    }
+
+    /**
+     * Mark authentication process as finished.
+     */
+    protected void markAsSuccessful() {
+        session.setAuthenticated();
+        session.sendResponse(235, "2.7.0 Authentication successful.");
     }
 }

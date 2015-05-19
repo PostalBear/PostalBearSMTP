@@ -29,7 +29,7 @@ public class LoginAuthenticationHandler extends AbstractAuthenticationHandler<Lo
     /**
      * Constructs instance of LoginAuthenticationHandler.
      *
-     * @param session   for which authentication is started
+     * @param session   to authenticate
      * @param validator to validate credentials
      */
     public LoginAuthenticationHandler(SmtpSession session, @NonNull CredentialsValidator validator) {

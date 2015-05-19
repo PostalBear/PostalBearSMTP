@@ -3,7 +3,6 @@ package com.postalbear.smtp.auth;
 import com.postalbear.smtp.exception.SmtpException;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.IOException;
 
 /**
  * The interface that enables challenge-response communication necessary for SMTP AUTH.<p>
@@ -17,5 +16,11 @@ import java.io.IOException;
 @NotThreadSafe
 public interface AuthenticationHandler {
 
-    void start(String smtpLine) throws SmtpException, IOException;
+    /**
+     * Start SMTP authentication procedure.
+     *
+     * @param smtpLine which triggers authentication
+     * @throws SmtpException
+     */
+    void start(String smtpLine) throws SmtpException;
 }

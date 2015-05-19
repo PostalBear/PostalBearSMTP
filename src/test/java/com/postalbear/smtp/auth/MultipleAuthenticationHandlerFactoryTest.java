@@ -21,6 +21,7 @@ public class MultipleAuthenticationHandlerFactoryTest {
 
     @Mock
     private AuthenticationHandlerFactory mockedFactoryDelegate;
+
     private MultipleAuthenticationHandlerFactory factory;
 
     @Before
