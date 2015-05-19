@@ -26,8 +26,7 @@ public interface AuthenticationHandlerFactory {
      *
      * @param mechanism to use
      * @param session   for which authentication process is started
-     * @param reader    to get more data from client
      * @return authentication handler
      */
-    AuthenticationHandler create(String mechanism, SmtpSession session, SmtpLineReader reader);
+    AuthenticationHandler create(String mechanism, SmtpSession session);
 }

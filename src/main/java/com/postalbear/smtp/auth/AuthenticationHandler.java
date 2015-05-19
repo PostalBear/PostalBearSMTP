@@ -17,13 +17,5 @@ import java.io.IOException;
 @NotThreadSafe
 public interface AuthenticationHandler {
 
-    /**
-     * Starts authentication process.
-     * Initially called using an input string in the RFC4954 form: "AUTH \<mechanism\> [initial-response]".
-     *
-     * @param smtpLine line to process
-     * @throws SmtpException if authentication attempt failed
-     * @throws IOException   if failed to read data
-     */
     void start(String smtpLine) throws SmtpException, IOException;
 }

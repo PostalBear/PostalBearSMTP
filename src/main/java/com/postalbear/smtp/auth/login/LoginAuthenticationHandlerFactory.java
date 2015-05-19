@@ -43,10 +43,10 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
      * {@inheritDoc}
      */
     @Override
-    public AuthenticationHandler create(String mechanism, SmtpSession session, SmtpLineReader reader) {
+    public AuthenticationHandler create(String mechanism, SmtpSession session) {
         if (!getAuthenticationMechanisms().contains(mechanism)) {
             throw new SmtpException(504, "5.5.4 The requested authentication mechanism is not supported");
         }
-        return new LoginAuthenticationHandler(session, reader, credentialsValidator);
+        return new LoginAuthenticationHandler(session, credentialsValidator);
     }
 }

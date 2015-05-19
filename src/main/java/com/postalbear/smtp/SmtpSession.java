@@ -8,6 +8,11 @@ package com.postalbear.smtp;
 public interface SmtpSession extends ConfigurationProvider, SmtpTransactionHandler {
 
     /**
+     * @return true if client's helo received
+     */
+    boolean isClientHeloDone();
+
+    /**
      * Check that current SMTP session is authenticated.
      *
      * @return true if authenticated
@@ -18,6 +23,18 @@ public interface SmtpSession extends ConfigurationProvider, SmtpTransactionHandl
      * Marks session as successfully authenticated.
      */
     void setAuthenticated();
+
+    /**
+     * Associate custom SmtpProcessor with current session which should be used for processing of incoming data.
+     *
+     * @param smtpProcessor
+     */
+    void setSmtpProcessor(SmtpProcessor smtpProcessor);
+
+    /**
+     * @return associated SmtpProcessor instance or null
+     */
+    SmtpProcessor getSmtpProcessor();
 
     /**
      * Check whether mail transaction is in progress.

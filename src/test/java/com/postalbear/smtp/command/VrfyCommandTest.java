@@ -26,7 +26,7 @@ public class VrfyCommandTest {
     @Mock
     private SmtpInput input;
 
-    private final VerifyCommand command = new VerifyCommand();
+    private VerifyCommand command = new VerifyCommand();
 
     @Test(expected = SmtpException.class)
     public void testHandle() throws Exception {

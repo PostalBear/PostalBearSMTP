@@ -31,7 +31,7 @@ public class HeloCommandTest {
     @Mock
     private SmtpInput input;
 
-    private final HeloCommand command = new HeloCommand();
+    private HeloCommand command = new HeloCommand();
 
     @Before
     public void init() {

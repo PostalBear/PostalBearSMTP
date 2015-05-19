@@ -31,7 +31,7 @@ public class EhloCommandTest {
     @Mock
     private SmtpInput input;
 
-    private final EhloCommand command = new EhloCommand();
+    private EhloCommand command = new EhloCommand();
 
     @Before
     public void init() {

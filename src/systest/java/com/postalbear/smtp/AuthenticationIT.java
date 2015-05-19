@@ -7,7 +7,9 @@ import com.postalbear.smtp.auth.plain.PlainAuthenticationHandlerFactory;
 import com.sun.mail.smtp.SMTPMessage;
 import com.sun.mail.smtp.SMTPSendFailedException;
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import javax.mail.*;
 import java.util.Properties;
@@ -15,8 +17,10 @@ import java.util.Properties;
 import static javax.mail.Session.getInstance;
 import static org.apache.commons.lang3.StringUtils.chomp;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Test checks that PostalBear are capable to deal with SMTP AUTH (at least with Java Mail).
@@ -28,11 +32,16 @@ public class AuthenticationIT extends AbstractServerIT {
     public static final String LOGIN = "login";
     public static final String PASSWORD = "password";
 
+    @Mock
+    private CredentialsValidator validator;
+
+    @Before
+    public void init() throws Exception {
+        when(validator.validateCredentials(eq(LOGIN), eq(PASSWORD))).thenReturn(true);
+    }
+
     @Test
     public void testAuthLogin() throws Exception {
-        CredentialsValidator validator = mock(CredentialsValidator.class);
-        when(validator.validateCredentials(eq(LOGIN), eq(PASSWORD))).thenReturn(true);
-
         SmtpServerConfiguration.Builder builder = SmtpServerConfiguration.getBuilder();
         builder.setAuthenticationEnforced(true);
         builder.setAuthenticationFactory(
@@ -55,9 +64,6 @@ public class AuthenticationIT extends AbstractServerIT {
 
     @Test
     public void testAuthPlain() throws Exception {
-        CredentialsValidator validator = mock(CredentialsValidator.class);
-        when(validator.validateCredentials(eq(LOGIN), eq(PASSWORD))).thenReturn(true);
-
         SmtpServerConfiguration.Builder builder = SmtpServerConfiguration.getBuilder();
         builder.setAuthenticationEnforced(true);
         builder.setAuthenticationFactory(
@@ -80,8 +86,6 @@ public class AuthenticationIT extends AbstractServerIT {
 
     @Test(expected = SMTPSendFailedException.class)
     public void testAuthEnforced() throws Exception {
-        CredentialsValidator validator = mock(CredentialsValidator.class);
-
         SmtpServerConfiguration.Builder builder = SmtpServerConfiguration.getBuilder();
         builder.setAuthenticationEnforced(true);
         builder.setAuthenticationFactory(
@@ -105,8 +109,6 @@ public class AuthenticationIT extends AbstractServerIT {
 
     @Test(expected = AuthenticationFailedException.class)
     public void testAuthNotSupportedMechanism() throws Exception {
-        CredentialsValidator validator = mock(CredentialsValidator.class);
-
         SmtpServerConfiguration.Builder builder = SmtpServerConfiguration.getBuilder();
         builder.setAuthenticationEnforced(true);
         builder.setAuthenticationFactory(
@@ -120,8 +122,6 @@ public class AuthenticationIT extends AbstractServerIT {
         properties.setProperty("mail.smtp.auth.mechanisms", "DIGEST-MD5");
 
         Session session = getInstance(properties, new TestAuthenticator());
-        session.setDebug(true);
-        session.setDebugOut(System.out);
         Transport transport = session.getTransport();
         try {
             transport.connect();

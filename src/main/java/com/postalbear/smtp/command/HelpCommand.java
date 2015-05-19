@@ -21,10 +21,10 @@ import java.io.IOException;
  */
 public class HelpCommand extends BaseCommand {
 
-    public static final String VERB = "HELP";
-    private final CommandHandler handler;
+    private static final String VERB = "HELP";
+    private final CommandRegistry handler;
 
-    public HelpCommand(@NonNull CommandHandler handler) {
+    public HelpCommand(@NonNull CommandRegistry handler) {
         super(VERB);
         this.handler = handler;
     }

@@ -5,7 +5,6 @@ import com.postalbear.smtp.auth.AuthenticationHandler;
 import com.postalbear.smtp.auth.AuthenticationHandlerFactory;
 import com.postalbear.smtp.auth.CredentialsValidator;
 import com.postalbear.smtp.exception.SmtpException;
-import com.postalbear.smtp.io.SmtpLineReader;
 import lombok.NonNull;
 
 import java.util.Collections;
@@ -43,10 +42,10 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
      * {@inheritDoc}
      */
     @Override
-    public AuthenticationHandler create(String mechanism, SmtpSession session, SmtpLineReader reader) {
+    public AuthenticationHandler create(String mechanism, SmtpSession session) {
         if (!getAuthenticationMechanisms().contains(mechanism)) {
             throw new SmtpException(504, "5.5.4 The requested authentication mechanism is not supported");
         }
-        return new PlainAuthenticationHandler(session, reader, credentialsValidator);
+        return new PlainAuthenticationHandler(session, credentialsValidator);
     }
 }

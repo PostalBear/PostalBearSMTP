@@ -5,7 +5,6 @@ package com.postalbear.smtp.auth;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
 import com.postalbear.smtp.io.SmtpLineReader;
-import lombok.NonNull;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Locale;
@@ -28,7 +27,7 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
      *
      * @param factories delegates
      */
-    public MultipleAuthenticationHandlerFactory(@NonNull AuthenticationHandlerFactory... factories) {
+    public MultipleAuthenticationHandlerFactory(AuthenticationHandlerFactory... factories) {
         Validate.notEmpty(factories);
         Validate.noNullElements(factories);
         for (AuthenticationHandlerFactory factory : factories) {
@@ -50,10 +49,10 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
      * {@inheritDoc }
      */
     @Override
-    public AuthenticationHandler create(String mechanism, SmtpSession session, SmtpLineReader reader) {
+    public AuthenticationHandler create(String mechanism, SmtpSession session) {
         if (!getAuthenticationMechanisms().contains(mechanism)) {
             throw new SmtpException(504, "5.5.4 The requested authentication mechanism is not supported");
         }
-        return authMechanisms.get(mechanism).create(mechanism, session, reader);
+        return authMechanisms.get(mechanism).create(mechanism, session);
     }
 }

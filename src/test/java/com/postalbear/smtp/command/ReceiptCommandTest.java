@@ -35,7 +35,7 @@ public class ReceiptCommandTest {
     @Mock
     private SmtpInput input;
 
-    private final ReceiptCommand command = new ReceiptCommand();
+    private ReceiptCommand command = new ReceiptCommand();
 
     @Before
     public void init() {

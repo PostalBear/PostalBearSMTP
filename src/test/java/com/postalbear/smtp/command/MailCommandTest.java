@@ -26,6 +26,7 @@ import static org.mockito.Mockito.*;
 public class MailCommandTest {
 
     private static final String ADDRESS = "test@test.test";
+
     @Mock
     private SmtpSession session;
     @Mock
@@ -45,7 +46,6 @@ public class MailCommandTest {
         command.handle(ADDRESS, session, input);
 
         verify(session).sendResponse(eq(501), eq("5.5.2 Syntax error: MAIL FROM: <address> [parameters]"));
-
     }
 
     @Test

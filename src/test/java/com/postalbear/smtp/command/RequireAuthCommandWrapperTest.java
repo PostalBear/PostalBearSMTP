@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -32,13 +33,12 @@ public class RequireAuthCommandWrapperTest {
     private SmtpSession session;
     @Mock
     private SmtpInput input;
-
+    @InjectMocks
     private RequireAuthCommandWrapper wrapper;
 
     @Before
     public void init() {
         when(session.getConfiguration()).thenReturn(configuration);
-        wrapper = new RequireAuthCommandWrapper(command);
     }
 
     @Test(expected = SmtpException.class)

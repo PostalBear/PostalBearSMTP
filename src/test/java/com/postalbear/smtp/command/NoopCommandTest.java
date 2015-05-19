@@ -24,7 +24,7 @@ public class NoopCommandTest {
     @Mock
     private SmtpInput input;
 
-    private final NoopCommand command = new NoopCommand();
+    private NoopCommand command = new NoopCommand();
 
     @Test
     public void testHandleValid() throws Exception {

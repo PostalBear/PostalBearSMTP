@@ -27,7 +27,7 @@ public class QuitCommandTest {
     @Mock
     private SmtpInput input;
 
-    private final QuitCommand command = new QuitCommand();
+    private QuitCommand command = new QuitCommand();
 
     @Test
     public void testHandleValid() throws Exception {

@@ -13,24 +13,24 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Grigory Fadeev
  */
-public class CommandHandlerTest {
+public class CommandRegistryTest {
 
-    private CommandHandler handler = CommandRegistry.getCommandHandler();
+    private CommandRegistry commandRegistry = CommandRegistryFactory.create();
 
     @Test
     public void testParseCommandByLength() {
-        Assert.assertNotNull(handler.getCommand("HELO"));
+        Assert.assertNotNull(commandRegistry.getCommand("HELO"));
     }
 
     @Test
     public void testParseWithSpaceTerminator() {
-        Assert.assertNotNull(handler.getCommand("MAIL FROM"));
+        Assert.assertNotNull(commandRegistry.getCommand("MAIL FROM"));
     }
 
     @Test(expected = SmtpException.class)
     public void testUnknownCommand() throws Exception {
         try {
-            handler.getCommand("UNKNOWN");
+            commandRegistry.getCommand("UNKNOWN");
         } catch (SmtpException ex) {
             assertEquals(500, ex.getResponseCode());
             assertEquals("SMTP command: \"UNKNOWN\" not implemented", ex.getResponseMessage());

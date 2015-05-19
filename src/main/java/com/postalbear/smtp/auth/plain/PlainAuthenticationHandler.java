@@ -4,7 +4,6 @@ import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.AbstractAuthenticationHandler;
 import com.postalbear.smtp.auth.CredentialsValidator;
 import com.postalbear.smtp.exception.SmtpException;
-import com.postalbear.smtp.io.SmtpLineReader;
 import lombok.NonNull;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -31,11 +30,10 @@ public class PlainAuthenticationHandler extends AbstractAuthenticationHandler<Pl
      * Constructs instance of PlainAuthenticationHandler.
      *
      * @param session   for which authentication is started
-     * @param reader    to get more data from the client
      * @param validator to validate credentials
      */
-    public PlainAuthenticationHandler(SmtpSession session, SmtpLineReader reader, @NonNull CredentialsValidator validator) {
-        super(session, reader, PlainAuthStage.INITIAL);
+    public PlainAuthenticationHandler(SmtpSession session, @NonNull CredentialsValidator validator) {
+        super(session, PlainAuthStage.INITIAL);
         this.validator = validator;
     }
 
@@ -75,22 +73,22 @@ public class PlainAuthenticationHandler extends AbstractAuthenticationHandler<Pl
 
     String getAuthentication(byte[] decodedSecret, int endOfAuthorization, int endOfAuthentication) {
         return new String(decodedSecret,
-                endOfAuthorization + 1,
-                endOfAuthentication - (endOfAuthorization + 1),
-                UTF8_CHARSET);
+                          endOfAuthorization + 1,
+                          endOfAuthentication - (endOfAuthorization + 1),
+                          UTF8_CHARSET);
     }
 
     String getPassword(byte[] decodedSecret, int endOfAuthentication) {
         return new String(decodedSecret,
-                endOfAuthentication + 1,
-                decodedSecret.length - (endOfAuthentication + 1),
-                UTF8_CHARSET);
+                          endOfAuthentication + 1,
+                          decodedSecret.length - (endOfAuthentication + 1),
+                          UTF8_CHARSET);
     }
 
     void validateCredentials(String authentication, String password) throws SmtpException {
         if (!validator.validateCredentials(authentication, password)) {
             throw new SmtpException(535, "5.7.8 Authentication failure, invalid credentials");
         }
-        completeAuthentication();
+        markAsSuccessful();
     }
 }

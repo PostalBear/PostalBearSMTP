@@ -36,8 +36,8 @@ public class LineParserTest {
             "\"! # $ % & ' * + - / = ?  ^ _ ` . { | } ~\"\\ @test.test"
     };
 
-    private final String PARAMETER = "parameter=value";
-    private final LineParser parser = new LineParser();
+    private static final String PARAMETER = "parameter=value";
+    private LineParser parser = new LineParser();
 
     @Theory
     public void testPlainLine(String address) throws Exception {
@@ -48,7 +48,6 @@ public class LineParserTest {
 
     @Theory
     public void testPlainLineWithParams(String address) throws Exception {
-
         String smtpLine = address + " " + PARAMETER;
         ParsingResult result = parser.parseLine(smtpLine);
         Assert.assertEquals(address, result.getEmailAddress());

@@ -36,8 +36,6 @@ public class AuthCommandTest {
     private SmtpSession session;
     @Mock
     private SmtpInput input;
-    @Mock
-    private SmtpLineReader reader;
 
     private AuthCommand command = new AuthCommand();
 
@@ -45,8 +43,7 @@ public class AuthCommandTest {
     public void init() {
         when(session.isAuthenticated()).thenReturn(false);
         when(configuration.getAuthenticationFactory()).thenReturn(authenticationFactory);
-        when(input.getSmtpLineReader()).thenReturn(reader);
-        when(authenticationFactory.create(Matchers.anyString(), eq(session), eq(reader))).thenReturn(authHandler);
+        when(authenticationFactory.create(Matchers.anyString(), eq(session))).thenReturn(authHandler);
     }
 
     @Test(expected = SmtpException.class)

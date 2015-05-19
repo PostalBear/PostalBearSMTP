@@ -20,20 +20,10 @@ public class GrizzlySmtpSession extends AbstractSmtpSession {
     private final List<String> responseBuffer = new ArrayList<>();
     private final SmtpServer server;
     private FilterChainContext context;
-    //session state
-    private boolean welcomeBannerShown = false;
 
     public GrizzlySmtpSession(SmtpServer server) {
         super(server);
         this.server = server;
-    }
-
-    public boolean isWelcomeBannerShown() {
-        return welcomeBannerShown;
-    }
-
-    public void markWelcomeBannerAsShown() {
-        this.welcomeBannerShown = true;
     }
 
     /**

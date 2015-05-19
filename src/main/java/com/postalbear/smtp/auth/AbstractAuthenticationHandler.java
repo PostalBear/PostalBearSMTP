@@ -1,24 +1,26 @@
 package com.postalbear.smtp.auth;
 
+import com.postalbear.smtp.SmtpProcessor;
+import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
-import com.postalbear.smtp.io.SmtpLineReader;
 import lombok.NonNull;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import java.io.IOException;
 
 /**
- * Base for authentication handlers.
+ * Base class for authentication handlers.
  *
  * @author Grigory Fadeev
  */
-public abstract class AbstractAuthenticationHandler<T extends AuthStage> implements AuthenticationHandler {
+@NotThreadSafe
+public abstract class AbstractAuthenticationHandler<T extends AuthStage> implements AuthenticationHandler, SmtpProcessor {
 
     // RFC 2554 explicitly states this:
     private static final String CANCEL_COMMAND = "*";
     //
     private final SmtpSession session;
-    private final SmtpLineReader reader;
     private T stage;
 
     /*
@@ -26,9 +28,8 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
      * @param reader       to read additional data from client
      * @param initialStage initial stage of authentication
      */
-    public AbstractAuthenticationHandler(@NonNull SmtpSession session, @NonNull SmtpLineReader reader, @NonNull T initialStage) {
+    public AbstractAuthenticationHandler(@NonNull SmtpSession session, @NonNull T initialStage) {
         this.session = session;
-        this.reader = reader;
         this.stage = initialStage;
     }
 
@@ -37,19 +38,31 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
      */
     @Override
     public void start(String line) throws SmtpException, IOException {
-        String currentLine = line;
-        while (!checkCancelCommand(currentLine) && stage.handle(this, currentLine)) {
-            currentLine = reader.readLine();
+        if (stage.handle(this, line)) {
+            session.setSmtpProcessor(this);
         }
     }
 
     /**
-     * @param line
-     * @return only to make javac happy.
+     * {@inheritDoc}
      */
-    private boolean checkCancelCommand(String line) {
+    @Override
+    public void process(SmtpInput smtpInput, SmtpSession session) throws IOException {
+        try {
+            String line = smtpInput.getSmtpLine();
+            if (checkIsAuthCanceled(line) || !stage.handle(this, line)) {
+                session.setSmtpProcessor(null);
+            }
+        } catch (SmtpException ex) {
+            session.setSmtpProcessor(null);
+            throw ex;
+        }
+    }
+
+    private boolean checkIsAuthCanceled(String line) {
         if (CANCEL_COMMAND.equals(line)) {
-            throw new SmtpException(501, "Authentication canceled by client."); //see RFC4954
+            sendResponse(501, "Authentication canceled by client."); //see RFC4954
+            return true;
         }
         return false;
     }
@@ -62,13 +75,12 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
      */
     public void sendResponse(int code, String message) {
         session.sendResponse(code, message);
-        session.flush();
     }
 
     /**
      * Mark authentication process as finished.
      */
-    public void completeAuthentication() {
+    public void markAsSuccessful() {
         session.setAuthenticated();
         sendResponse(235, "2.7.0 Authentication successful.");
     }

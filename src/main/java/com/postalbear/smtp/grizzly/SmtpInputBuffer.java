@@ -2,7 +2,6 @@ package com.postalbear.smtp.grizzly;
 
 import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.grizzly.codec.SmtpLineDecoder;
-import com.postalbear.smtp.io.SmtpLineReader;
 import lombok.NonNull;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.ReadResult;
@@ -37,8 +36,11 @@ public class SmtpInputBuffer implements SmtpInput {
     private CompositeBuffer buffer;
 
     /**
-     * @param ctx
-     * @return
+     * Returns SmtpInputBuffer instance associated with Connection.
+     * If no SmtpInputBuffer instance is yet available, create new one.
+     *
+     * @param ctx to access current connection
+     * @return SmtpInputBuffer instance
      */
     public static SmtpInputBuffer getSmtpInputBuffer(@NonNull FilterChainContext ctx) {
         SmtpInputBuffer instance = SMTP_INPUT_BUFFER.get(ctx.getConnection());
@@ -50,6 +52,11 @@ public class SmtpInputBuffer implements SmtpInput {
         return instance;
     }
 
+    /**
+     * Add chunk of data to buffer.
+     *
+     * @param dataChunk to add
+     */
     public void appendDataChunk(@NonNull Buffer dataChunk) {
         if (buffer == null) {
             buffer = BuffersBuffer.create(context.getMemoryManager());
@@ -57,14 +64,23 @@ public class SmtpInputBuffer implements SmtpInput {
         buffer.append(dataChunk);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean hasNextSmtpLine() {
         return decoder.hasCompleteLine(context.getConnection(), buffer);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String getSmtpLine() {
         return decoder.getSmtpLine(context.getConnection(), buffer);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean isEmpty() {
         return !buffer.hasRemaining();
     }
@@ -82,22 +98,9 @@ public class SmtpInputBuffer implements SmtpInput {
         buffer.append(dataChunk);
     }
 
-    @Override
-    public SmtpLineReader getSmtpLineReader() {
-        return new BlockingReader();
-    }
-
-    private class BlockingReader implements SmtpLineReader {
-
-        @Override
-        public String readLine() throws IOException {
-            while (!hasNextSmtpLine()) {
-                fillBufferBlocking();
-            }
-            return getSmtpLine();
-        }
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public InputStream getInputStream() {
         return new BlockingInputStream();

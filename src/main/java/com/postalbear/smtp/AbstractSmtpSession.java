@@ -19,6 +19,7 @@ public abstract class AbstractSmtpSession implements SmtpSession {
     private String clientHelo;
     private int recipientsCount;
     private boolean authenticated;
+    private SmtpProcessor smtpProcessor;
     private SmtpTransactionHandler handler;
 
     public AbstractSmtpSession(final ConfigurationProvider configurationProvider) {
@@ -26,16 +27,9 @@ public abstract class AbstractSmtpSession implements SmtpSession {
         this.configuration = configurationProvider.getConfiguration();
     }
 
-    @Override
-    public void setAuthenticated() {
-        authenticated = true;
-    }
-
-    @Override
-    public boolean isAuthenticated() {
-        return authenticated;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void startMailTransaction() {
         recipientsCount = 0;
@@ -44,50 +38,117 @@ public abstract class AbstractSmtpSession implements SmtpSession {
         handler.helo(clientHelo);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMailTransactionInProgress() {
         return handler != null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void resetMailTransaction() {
         recipientsCount = 0;
         handler = null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SmtpServerConfiguration getConfiguration() {
         return configuration;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getRecipientsCount() {
         return recipientsCount;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void helo(String clientHelo) {
         this.clientHelo = clientHelo;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isClientHeloDone() {
+        return clientHelo != null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void from(InternetAddress from) {
         handler.from(from);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void messageSize(int size) {
         handler.messageSize(size);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void recipient(InternetAddress recipient) {
         handler.recipient(recipient);
         recipientsCount++;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void data(InputStream data) throws IOException {
         handler.data(data);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setAuthenticated() {
+        authenticated = true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isAuthenticated() {
+        return authenticated;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SmtpProcessor getSmtpProcessor() {
+        return smtpProcessor;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSmtpProcessor(SmtpProcessor smtpProcessor) {
+        this.smtpProcessor = smtpProcessor;
     }
 }

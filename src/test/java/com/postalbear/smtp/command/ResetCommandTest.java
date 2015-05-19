@@ -24,7 +24,7 @@ public class ResetCommandTest {
     @Mock
     private SmtpInput input;
 
-    private final ResetCommand command = new ResetCommand();
+    private ResetCommand command = new ResetCommand();
 
     @Test
     public void testHandle() throws Exception {

@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -32,13 +33,12 @@ public class RequireTLSCommandWrapperTest {
     private SmtpSession session;
     @Mock
     private SmtpInput input;
-
+    @InjectMocks
     private RequireTLSCommandWrapper wrapper;
 
     @Before
     public void init() {
         when(session.getConfiguration()).thenReturn(configuration);
-        wrapper = new RequireTLSCommandWrapper(command);
     }
 
     @Test(expected = SmtpException.class)

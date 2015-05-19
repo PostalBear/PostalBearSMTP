@@ -26,7 +26,7 @@ public class ExpandCommandTest {
     @Mock
     private SmtpInput input;
 
-    private final ExpandCommand command = new ExpandCommand();
+    private ExpandCommand command = new ExpandCommand();
 
     @Test(expected = SmtpException.class)
     public void testHandle() throws Exception {

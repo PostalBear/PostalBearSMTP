@@ -6,7 +6,6 @@ import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.AbstractAuthenticationHandler;
 import com.postalbear.smtp.auth.CredentialsValidator;
 import com.postalbear.smtp.exception.SmtpException;
-import com.postalbear.smtp.io.SmtpLineReader;
 import lombok.NonNull;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -31,11 +30,10 @@ public class LoginAuthenticationHandler extends AbstractAuthenticationHandler<Lo
      * Constructs instance of LoginAuthenticationHandler.
      *
      * @param session   for which authentication is started
-     * @param reader    to get more data from the client
      * @param validator to validate credentials
      */
-    public LoginAuthenticationHandler(SmtpSession session, SmtpLineReader reader, @NonNull CredentialsValidator validator) {
-        super(session, reader, LoginAuthStage.INITIAL);
+    public LoginAuthenticationHandler(SmtpSession session, @NonNull CredentialsValidator validator) {
+        super(session, LoginAuthStage.INITIAL);
         this.validator = validator;
     }
 
@@ -59,6 +57,6 @@ public class LoginAuthenticationHandler extends AbstractAuthenticationHandler<Lo
         if (!validator.validateCredentials(username, password)) {
             throw new SmtpException(535, "5.7.8 Authentication failure, invalid credentials");
         }
-        completeAuthentication();
+        markAsSuccessful();
     }
 }

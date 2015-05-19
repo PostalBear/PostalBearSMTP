@@ -1,8 +1,7 @@
 package com.postalbear.smtp.grizzly;
 
+import com.postalbear.smtp.SmtpProcessor;
 import com.postalbear.smtp.SmtpSession;
-import com.postalbear.smtp.command.Command;
-import com.postalbear.smtp.command.CommandHandler;
 import com.postalbear.smtp.exception.SmtpException;
 import lombok.NonNull;
 import org.glassfish.grizzly.filterchain.BaseFilter;
@@ -14,18 +13,18 @@ import java.io.IOException;
 import static com.postalbear.smtp.grizzly.SmtpInputBuffer.getSmtpInputBuffer;
 
 /**
- * Filter intended to parse and process SMTP commands received from client.
+ * Filter to process SMTP commands received from client.
  *
  * @author Grigory Fadeev
  */
 public class SmtpFilter extends BaseFilter {
 
     private final SmtpSessionProvider sessionProvider;
-    private final CommandHandler commandHandler;
+    private final SmtpProcessor defaultProcessor;
 
-    public SmtpFilter(@NonNull SmtpSessionProvider sessionProvider, @NonNull CommandHandler commandHandler) {
+    public SmtpFilter(@NonNull SmtpSessionProvider sessionProvider, SmtpProcessor defaultProcessor) {
         this.sessionProvider = sessionProvider;
-        this.commandHandler = commandHandler;
+        this.defaultProcessor = defaultProcessor;
     }
 
     @Override
@@ -35,10 +34,9 @@ public class SmtpFilter extends BaseFilter {
         smtpInput.appendDataChunk(ctx.getMessage());
 
         try {
+            SmtpProcessor smtpProcessor = getDataProcessor(session);
             while (smtpInput.hasNextSmtpLine()) {
-                String smtpLine = smtpInput.getSmtpLine();
-                Command command = commandHandler.getCommand(smtpLine);
-                command.handle(smtpLine, session, smtpInput);
+                smtpProcessor.process(smtpInput, session);
             }
             if (smtpInput.isEmpty()) {
                 smtpInput.release();
@@ -49,5 +47,12 @@ public class SmtpFilter extends BaseFilter {
             session.flush();
         }
         return ctx.getStopAction();
+    }
+
+    private SmtpProcessor getDataProcessor(SmtpSession session) {
+        if (session.getSmtpProcessor() != null) {
+            return session.getSmtpProcessor();
+        }
+        return defaultProcessor;
     }
 }

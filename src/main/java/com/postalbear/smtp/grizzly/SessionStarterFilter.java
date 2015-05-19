@@ -1,6 +1,7 @@
 package com.postalbear.smtp.grizzly;
 
 import com.postalbear.smtp.SmtpServerConfiguration;
+import com.postalbear.smtp.SmtpSession;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
@@ -19,38 +20,31 @@ import java.io.IOException;
  */
 public class SessionStarterFilter extends BaseFilter implements SSLBaseFilter.HandshakeListener {
 
-    private final SmtpServerConfiguration configuration;
     private final SmtpSessionProvider sessionProvider;
 
     /**
      * Constructs instance of SessionStarterFilter.
      *
      * @param sessionProvider to start new SMTP session
-     * @param configuration   current configuration.
      */
-    public SessionStarterFilter(SmtpSessionProvider sessionProvider, SmtpServerConfiguration configuration) {
-        this.configuration = configuration;
+    public SessionStarterFilter(SmtpSessionProvider sessionProvider) {
         this.sessionProvider = sessionProvider;
     }
 
     @Override
     public NextAction handleAccept(FilterChainContext ctx) throws IOException {
-        GrizzlySmtpSession session = sessionProvider.startNewSession(ctx);
-        if (isSmtpCase(session)) {
+        SmtpSession session = sessionProvider.startNewSession(ctx);
+        if (!session.isConnectionSecured()) {
             showServerBanner(session);
         }
         return ctx.getStopAction();
     }
 
-    private boolean isSmtpCase(GrizzlySmtpSession session) {
-        return !session.isConnectionSecured();
-    }
-
     /**
-     * Method will be invoked when TLS handshake is complete.
+     * Method is invoked when TLS handshake is complete.
      * There are two possible reasons for initiating secured connection:
      * 1. STARTTLS was requested by client (for this case we need to reset server state as requested by RFC3207).
-     * 2. This is SMTPS connection from begining.
+     * 2. This is SMTPS connection from beginning and we need to show welcome banner.
      *
      * @param connection
      */
@@ -58,22 +52,22 @@ public class SessionStarterFilter extends BaseFilter implements SSLBaseFilter.Ha
     public void onComplete(Connection connection) {
         FilterChainContext ctx = createContext(connection, FilterChainContext.Operation.NONE);
         GrizzlySmtpSession session = sessionProvider.getSmtpSession(ctx);
-        if (!session.isWelcomeBannerShown()) {
+        if (!session.isClientHeloDone()) {
             showServerBanner(session);
         } else {
-            sessionProvider.startNewSession(ctx).markWelcomeBannerAsShown();
+            sessionProvider.startNewSession(ctx);
         }
     }
 
-    private void showServerBanner(GrizzlySmtpSession session) {
+    private void showServerBanner(SmtpSession session) {
+        SmtpServerConfiguration configuration = session.getConfiguration();
         String welcomeMessage = configuration.getHostName() + " ESMTP " + configuration.getSoftwareName();
         session.sendResponse(220, welcomeMessage);
         session.flush();
-        session.markWelcomeBannerAsShown();
     }
 
     @Override
     public void onStart(Connection connection) {
-        //do nothing on handshake start
+        //nothing to do on handshake start
     }
 }
