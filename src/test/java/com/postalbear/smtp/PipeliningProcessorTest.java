@@ -1,8 +1,5 @@
 package com.postalbear.smtp;
 
-import com.postalbear.smtp.PipeliningProcessor;
-import com.postalbear.smtp.SmtpInput;
-import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.command.Command;
 import com.postalbear.smtp.command.CommandRegistry;
 import org.junit.Before;
@@ -13,7 +10,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Grigory Fadeev.
@@ -39,8 +39,19 @@ public class PipeliningProcessorTest {
 
     @Test
     public void testProcess() throws Exception {
+        when(smtpInput.hasNextSmtpLine()).thenReturn(true, false);
         when(smtpInput.getSmtpLine()).thenReturn("TEST");
         processor.process(smtpInput, session);
+
+        verify(command).handle(eq("TEST"), same(session), same(smtpInput));
+    }
+
+    @Test
+    public void testProcessEmptyInput() throws Exception {
+        when(smtpInput.hasNextSmtpLine()).thenReturn(false);
+        processor.process(smtpInput, session);
+
+        verify(command, never()).handle(anyString(), any(SmtpSession.class), any(SmtpInput.class));
     }
 
     @Test(expected = NullPointerException.class)

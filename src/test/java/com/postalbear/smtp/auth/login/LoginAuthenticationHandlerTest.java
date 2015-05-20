@@ -53,6 +53,7 @@ public class LoginAuthenticationHandlerTest {
         String smtpLine = "AUTH LOGIN";
         handler.start(smtpLine);
 
+        when(smtpInput.hasNextSmtpLine()).thenReturn(true, true, false);
         when(smtpInput.getSmtpLine()).thenReturn(LOGIN_ENCRYPTED, PASSWORD_ENCRYPTED);
         handler.process(smtpInput, session);
         verify(session).sendResponse(eq(334), eq(LOGIN_REQUEST));
@@ -67,6 +68,7 @@ public class LoginAuthenticationHandlerTest {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
         handler.start(smtpLine);
 
+        when(smtpInput.hasNextSmtpLine()).thenReturn(true, false);
         when(smtpInput.getSmtpLine()).thenReturn(PASSWORD_ENCRYPTED);
         handler.process(smtpInput, session);
         verify(session).sendResponse(eq(334), eq("UGFzc3dvcmQ6"));
@@ -79,8 +81,8 @@ public class LoginAuthenticationHandlerTest {
         String smtpLine = "AUTH PLAIN";
         handler.start(smtpLine);
 
-        String line = CANCEL_COMMAND; // canceled
-        when(smtpInput.getSmtpLine()).thenReturn(line);
+        when(smtpInput.hasNextSmtpLine()).thenReturn(true, false);
+        when(smtpInput.getSmtpLine()).thenReturn(CANCEL_COMMAND);
         handler.process(smtpInput, session);
         verify(session).sendResponse(eq(501), eq("Authentication canceled by client."));
         verify(validator, never()).validateCredentials(anyString(), anyString());
@@ -105,6 +107,7 @@ public class LoginAuthenticationHandlerTest {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
         handler.start(smtpLine);
 
+        when(smtpInput.hasNextSmtpLine()).thenReturn(true, false);
         when(smtpInput.getSmtpLine()).thenReturn("=AAA==");
         try {
             handler.process(smtpInput, session);

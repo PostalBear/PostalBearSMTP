@@ -32,7 +32,7 @@ public final class CommandUtils {
      * Get arguments from SMTP line.
      *
      * @param smtpLine to parse
-     * @return
+     * @return list of command arguments
      */
     public static List<String> getArguments(String smtpLine) {
         StringTokenizer tokenizer = new StringTokenizer(smtpLine);

@@ -32,12 +32,8 @@ public class SmtpFilter extends BaseFilter {
         SmtpSession session = sessionProvider.getSmtpSession(ctx);
         SmtpInputBuffer smtpInput = getSmtpInputBuffer(ctx);
         smtpInput.appendDataChunk(ctx.getMessage());
-
         try {
-            SmtpProcessor smtpProcessor = getDataProcessor(session);
-            while (smtpInput.hasNextSmtpLine()) {
-                smtpProcessor.process(smtpInput, session);
-            }
+            getProcessor(session).process(smtpInput, session);
             if (smtpInput.isEmpty()) {
                 smtpInput.release();
                 session.flush();
@@ -49,7 +45,7 @@ public class SmtpFilter extends BaseFilter {
         return ctx.getStopAction();
     }
 
-    private SmtpProcessor getDataProcessor(SmtpSession session) {
+    private SmtpProcessor getProcessor(SmtpSession session) {
         if (session.getSmtpProcessor() != null) {
             return session.getSmtpProcessor();
         }

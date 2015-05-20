@@ -60,6 +60,7 @@ public class PlainAuthenticationHandlerTest {
         handler.start(smtpLine);
 
         String secret = Base64.getEncoder().encodeToString(("authorization" + NUL + "login" + NUL + "password").getBytes());
+        when(smtpInput.hasNextSmtpLine()).thenReturn(true, false);
         when(smtpInput.getSmtpLine()).thenReturn(secret);
         handler.process(smtpInput, session);
         verify(validator).validateCredentials(eq("login"), eq("password"));
@@ -72,8 +73,8 @@ public class PlainAuthenticationHandlerTest {
         String smtpLine = "AUTH PLAIN";
         handler.start(smtpLine);
 
-        String line = CANCEL_COMMAND; // canceled
-        when(smtpInput.getSmtpLine()).thenReturn(line);
+        when(smtpInput.hasNextSmtpLine()).thenReturn(true, false);
+        when(smtpInput.getSmtpLine()).thenReturn(CANCEL_COMMAND);
         handler.process(smtpInput, session);
         verify(session).sendResponse(eq(501), eq("Authentication canceled by client."));
         verify(validator, never()).validateCredentials(anyString(), anyString());
@@ -96,7 +97,7 @@ public class PlainAuthenticationHandlerTest {
 
     @Test(expected = SmtpException.class)
     public void testInvalidSecretBase64() throws Exception {
-        String smtpLine = "AUTH PLAIN " + "=AAA==";
+        String smtpLine = "AUTH PLAIN =AAA==";
         try {
             handler.start(smtpLine);
             fail("SmtpException expected");

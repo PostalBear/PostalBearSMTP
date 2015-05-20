@@ -16,7 +16,6 @@ public interface SmtpProcessor {
 
     /**
      * Concrete implementations are intended to process available data from SmtpInput.
-     * Implementation note: method should not be invoked when no SMTP line is available at input !
      *
      * @param smtpInput
      * @param session

@@ -54,9 +54,12 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
     @Override
     public void process(SmtpInput smtpInput, SmtpSession ignored) throws IOException {
         try {
-            String line = smtpInput.getSmtpLine();
-            if (checkIsAuthCanceled(line) || !stage.handle(this, line)) {
-                session.setSmtpProcessor(null);
+            while (smtpInput.hasNextSmtpLine()) {
+                String line = smtpInput.getSmtpLine();
+                if (checkIsAuthCanceled(line) || !stage.handle(this, line)) {
+                    session.setSmtpProcessor(null);
+                    return;
+                }
             }
         } catch (SmtpException ex) {
             session.setSmtpProcessor(null);

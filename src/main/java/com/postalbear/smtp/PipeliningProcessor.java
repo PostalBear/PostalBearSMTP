@@ -1,8 +1,5 @@
 package com.postalbear.smtp;
 
-import com.postalbear.smtp.SmtpInput;
-import com.postalbear.smtp.SmtpProcessor;
-import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.command.Command;
 import com.postalbear.smtp.command.CommandRegistry;
 import lombok.NonNull;
@@ -32,8 +29,10 @@ public class PipeliningProcessor implements SmtpProcessor {
      */
     @Override
     public void process(SmtpInput smtpInput, SmtpSession session) throws IOException {
-        String smtpLine = smtpInput.getSmtpLine();
-        Command command = commandRegistry.getCommand(smtpLine);
-        command.handle(smtpLine, session, smtpInput);
+        while (smtpInput.hasNextSmtpLine()) {
+            String smtpLine = smtpInput.getSmtpLine();
+            Command command = commandRegistry.getCommand(smtpLine);
+            command.handle(smtpLine, session, smtpInput);
+        }
     }
 }
