@@ -1,6 +1,7 @@
 package com.postalbear.smtp.grizzly;
 
 import com.postalbear.smtp.SmtpInput;
+import com.postalbear.smtp.grizzly.codec.Decoder;
 import com.postalbear.smtp.grizzly.codec.SmtpLineDecoder;
 import lombok.NonNull;
 import org.glassfish.grizzly.Buffer;
@@ -31,7 +32,7 @@ public class SmtpInputBuffer implements SmtpInput {
     private static final Attribute<SmtpInputBuffer> SMTP_INPUT_BUFFER =
             DEFAULT_ATTRIBUTE_BUILDER.createAttribute("SmtpInputBuffer");
 
-    private final SmtpLineDecoder decoder = new SmtpLineDecoder();
+    private final Decoder<String> lineDecoder = new SmtpLineDecoder();
     private FilterChainContext context;
     private CompositeBuffer buffer;
 
@@ -68,14 +69,14 @@ public class SmtpInputBuffer implements SmtpInput {
      * {@inheritDoc}
      */
     public boolean hasNextSmtpLine() {
-        return decoder.hasCompleteLine(context.getConnection(), buffer);
+        return lineDecoder.hasEnoughData(context.getConnection(), buffer);
     }
 
     /**
      * {@inheritDoc}
      */
     public String getSmtpLine() {
-        return decoder.getSmtpLine(context.getConnection(), buffer);
+        return lineDecoder.getData(context.getConnection(), buffer);
     }
 
     /**
@@ -86,10 +87,11 @@ public class SmtpInputBuffer implements SmtpInput {
     }
 
     public void release() {
-        decoder.release(context.getConnection());
+        lineDecoder.release(context.getConnection());
         buffer = null;
     }
 
+    @Deprecated
     private void fillBufferBlocking() throws IOException {
         ReadResult readResult = context.read();
         Buffer dataChunk = (Buffer) readResult.getMessage();

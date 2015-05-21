@@ -13,18 +13,23 @@ import static com.postalbear.smtp.SmtpConstants.*;
 import static org.glassfish.grizzly.attributes.AttributeBuilder.DEFAULT_ATTRIBUTE_BUILDER;
 
 /**
- * Decode grizzly Buffer (containing partially|full read SMTP line) to java String.
+ * This decoder is used to get complete SMTP lines from input.
+ * SMTP line is a sequence of characters no longer than {@value com.postalbear.smtp.SmtpConstants#SMTP_LINE_MAX_SIZE}
+ * and terminated with CRLF.
  *
  * @author Grigory Fadeev
  */
 @NotThreadSafe
-public class SmtpLineDecoder {
+public class SmtpLineDecoder implements Decoder<String> {
 
     private static final int TERMINATION_BYTES_LENGTH = CRLF.length();
     private final Attribute<Integer> offset;
     private final Attribute<Integer> crPosition;
     private final Attribute<Integer> lfPosition;
 
+    /**
+     * Constructs SmtpLineDecoder instance.
+     */
     public SmtpLineDecoder() {
         offset = DEFAULT_ATTRIBUTE_BUILDER.createAttribute("SmtpLineDecoder.offset", 0);
         crPosition = DEFAULT_ATTRIBUTE_BUILDER.createAttribute("SmtpLineDecoder.crPosition", -1);
@@ -32,11 +37,10 @@ public class SmtpLineDecoder {
     }
 
     /**
-     * @param storage
-     * @param input
-     * @return
+     * {@inheritDoc}
      */
-    public boolean hasCompleteLine(@NonNull Connection storage, @NonNull Buffer input) {
+    @Override
+    public boolean hasEnoughData(@NonNull Connection storage, @NonNull Buffer input) {
         int byteRead = offset.get(storage); //count of previously read bytes
         for (int i = input.position() + byteRead; i < input.limit(); i++) {
             //try to find CRLF
@@ -87,13 +91,10 @@ public class SmtpLineDecoder {
     }
 
     /**
-     * Get parsed line.
-     *
-     * @param storage attribute storage
-     * @param input   available data
-     * @return SMTP line
+     * {@inheritDoc}
      */
-    public String getSmtpLine(@NonNull Connection storage, @NonNull Buffer input) {
+    @Override
+    public String getData(@NonNull Connection storage, @NonNull Buffer input) {
         if (!isLineTerminatorFound(storage)) {
             throw new IllegalStateException("Method is invoked when no further SmtpLine available");
         }
@@ -109,6 +110,10 @@ public class SmtpLineDecoder {
         return stringMessage;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void release(Connection storage) {
         offset.remove(storage);
         crPosition.remove(storage);
