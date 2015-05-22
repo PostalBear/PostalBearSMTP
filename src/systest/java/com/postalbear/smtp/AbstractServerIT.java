@@ -97,8 +97,6 @@ public abstract class AbstractServerIT {
     }
 
     protected void sendMessage(Session session, SMTPMessage message, InternetAddress... addresses) throws Exception {
-        session.setDebug(true);
-        session.setDebugOut(System.out);
         Transport transport = session.getTransport();
         try {
             transport.connect();
@@ -115,6 +113,7 @@ public abstract class AbstractServerIT {
         Mockito.verify(transactionHandler).helo(eq(CLIENT_HELO));
         Mockito.verify(transactionHandler).from(eq(sender));
         Mockito.verify(transactionHandler).recipient(eq(recipient));
+        System.out.println(transactionHandler.getMessageAsString());
         assertEquals(MESSAGE_CONTENT, transactionHandler.getMessageAsString());
     }
 
