@@ -1,4 +1,7 @@
 # PostalBearSMTP
+[![Build Status](https://travis-ci.org/PostalBear/PostalBearSMTP.svg?branch=master)]
+(https://travis-ci.org/PostalBear/PostalBearSMTP)
+
 Poorly implemented SMTP server.
 
 Inspired by SubethaSmtp, build on top of Grizzly framework ...<br/>
