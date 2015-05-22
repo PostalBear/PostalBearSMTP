@@ -60,7 +60,7 @@ public abstract class AbstractServerIT {
     private int port;
 
     protected static String concatStrings(String... lines) {
-        return String.join(IOUtils.LINE_SEPARATOR, lines);
+        return String.join(SmtpConstants.CRLF, lines);
     }
 
     @Before
@@ -113,7 +113,6 @@ public abstract class AbstractServerIT {
         Mockito.verify(transactionHandler).helo(eq(CLIENT_HELO));
         Mockito.verify(transactionHandler).from(eq(sender));
         Mockito.verify(transactionHandler).recipient(eq(recipient));
-        System.out.println(transactionHandler.getMessageAsString());
         assertEquals(MESSAGE_CONTENT, transactionHandler.getMessageAsString());
     }
 
