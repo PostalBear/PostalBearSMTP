@@ -7,3 +7,16 @@ script: mvn -P integration-tests clean verify
 # Email notifications are disabled to not annoy anybody.
 notifications:
   email: false
+
+env:
+  global:
+   - secure: "qqzGkHMQ3yi7y83kBjlqJG95GXJH+bqvx/RTBFW1DMHujUbhndoWAZhn2jGpaNFp/I/frqguokGccQQw+CZRHAD2drB8vsl+3sPnYTRnH0OfSJ6YpdRQoY8LWMcOVdnPQQalN0ulFw9ky2lA7un5z15aNDoX+L5vpmi95RiAZhxA7WIX2DnwQTnYTgaMUbsHkezXV5wlPpcmMZP7dbKNJcaozcVVQEuxbmSqbtLvepf0oMY5HCnXUfnJUsP1FbKAlDtoXTp2Mk9ZtCBfBH3JuyEfLJnQYR6rqGMnF0Al3wWqNVZ39OGXv7BoD6lbmZ9+56JooEBVDkdBPBmTNJwBVPttlZy/eYkTudhefiv83+YMfUJxRFLnR2r7BcwdXSw6Qos+q/eyEU3CzYq4mJnb5OKy/2FsTOmdSjBxOZcSz+gwzf0wHMD1Y2SW1o52sDbz4rQSKeU262EiEZqH/dfUlhbFZ50hQIwFak/WP4AhzJk2xfyXQhiDzulwikG1qPrgzZWxbG3EpSjVq1xSNIVNVMdyGnXkpe3IsoFZedchPLBtI+gbcVdnQ8M9qinRM3ZsqGbEY6UkYHOO3Gnz/XfuvcyVzIUpqbqGNHLn/EDUmbDQqvSQNOWUjHIdFa23QD26OmKxdW1FOe6oF2Cs1YZThk9pbOhiswsA0DUXiLvu/+c="
+
+addons:
+  coverity_scan:
+    project:
+      name: "PostalBear/PostalBearSMTP"
+      description: "Code style analysis with Coverity"
+    build_command_prepend: "mvn clean"
+    build_command:         "mvn -DskipTests=true compile"
+    branch_pattern: CoverityScan
