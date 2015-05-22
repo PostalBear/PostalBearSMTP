@@ -17,6 +17,7 @@ addons:
     project:
       name: "PostalBear/PostalBearSMTP"
       description: "Code style analysis with Coverity"
+    notification_email: coverity@mailforspam.com
     build_command_prepend: "mvn clean"
     build_command:         "mvn -DskipTests=true compile"
     branch_pattern: CoverityScan
