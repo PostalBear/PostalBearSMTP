@@ -53,7 +53,7 @@ public abstract class AbstractServerIT {
     private int port;
 
     protected static String concatStrings(String... lines) {
-        return String.join(IOUtils.LINE_SEPARATOR, lines);
+        return String.join(SmtpConstants.CRLF, lines);
     }
 
     @Before
@@ -84,8 +84,6 @@ public abstract class AbstractServerIT {
     }
 
     protected void sendMessage(Session session, SMTPMessage message, InternetAddress... addresses) throws Exception {
-        session.setDebug(true);
-        session.setDebugOut(System.out);
         Transport transport = session.getTransport();
         try {
             transport.connect();

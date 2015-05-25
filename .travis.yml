@@ -1,0 +1,9 @@
+language: java
+
+jdk:
+  - oraclejdk8
+script: mvn -P integration-tests clean verify
+
+# Email notifications are disabled to not annoy anybody.
+notifications:
+  email: false
