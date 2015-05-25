@@ -60,7 +60,7 @@ public class ConfigurationBuilderTest {
         assertEquals(SOFTWARE_NAME, result.getSoftwareName());
         assertEquals(HOSTNAME, result.getHostName());
         //auth
-        assertEquals(authenticationFactory, result.getAuthenticationFactory());
+        assertNotNull(result.getAuthenticationFactory());
         assertTrue(result.isAuthenticationEnforced());
         //
         assertEquals(handlerFactory, result.getHandlerFactory());

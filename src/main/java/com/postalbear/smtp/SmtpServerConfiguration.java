@@ -1,6 +1,7 @@
 package com.postalbear.smtp;
 
 import com.postalbear.smtp.auth.AuthenticationHandlerFactory;
+import com.postalbear.smtp.grizzly.auth.GrizzlyAuthenticationHandlerFactory;
 import org.apache.commons.lang3.Validate;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 
@@ -156,7 +157,11 @@ public class SmtpServerConfiguration {
          * @return builder itself
          */
         public Builder setAuthenticationFactory(AuthenticationHandlerFactory authenticationFactory) {
-            configuration.authenticationFactory = authenticationFactory;
+            if (authenticationFactory != null) {
+                configuration.authenticationFactory = new GrizzlyAuthenticationHandlerFactory(authenticationFactory);
+            } else {
+                configuration.authenticationFactory = null;
+            }
             return this;
         }
 

@@ -125,8 +125,7 @@ public abstract class AbstractServerIT {
                 .setWorkerThreadPoolConfig(poolConfig)
                 .setReadBufferSize(2 * 1024);//2KB read buffer
 
-        TCPNIOTransport transport = builder.build();
-        return transport;
+        return builder.build();
     }
 
     private int findFreePort() throws Exception {
