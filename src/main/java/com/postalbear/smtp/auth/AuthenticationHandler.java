@@ -17,10 +17,10 @@ import javax.annotation.concurrent.NotThreadSafe;
 public interface AuthenticationHandler {
 
     /**
-     * Start SMTP authentication procedure.
+     * perform SMTP authentication procedure.
      *
-     * @param smtpLine which triggers authentication
-     * @throws SmtpException
+     * @param smtpLine to process
+     * @throws SmtpException if authentication failed due to some reasons
      */
-    void start(String smtpLine) throws SmtpException;
+    boolean processAuthentication(String smtpLine) throws SmtpException;
 }

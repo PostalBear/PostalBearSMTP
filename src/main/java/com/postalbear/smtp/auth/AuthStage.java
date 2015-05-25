@@ -9,10 +9,10 @@ import com.postalbear.smtp.exception.SmtpException;
  *
  * @author Grigory Fadeev
  */
-public interface AuthStage<T extends AbstractAuthenticationHandler> {
+public interface AuthStage<T extends AuthenticationHandler> {
 
     /**
-     * Implementations are intended to process given line.
+     * Process given line in accordance with current stage of authentication process.
      *
      * @param line to process
      * @return true if more lines are required

@@ -31,11 +31,10 @@ public class SmtpFilter extends BaseFilter {
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
         SmtpSession session = sessionProvider.getSmtpSession(ctx);
         SmtpInputBuffer smtpInput = getSmtpInputBuffer(ctx);
-        smtpInput.appendDataChunk(ctx.getMessage());
+        smtpInput.appendMessage(ctx.getMessage());
         try {
             getProcessor(session).process(smtpInput, session);
             if (smtpInput.isEmpty()) {
-                smtpInput.release();
                 session.flush();
             }
         } catch (SmtpException ex) {

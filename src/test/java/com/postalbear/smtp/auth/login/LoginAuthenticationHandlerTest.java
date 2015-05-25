@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.auth.login;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.CredentialsValidator;
 import com.postalbear.smtp.exception.SmtpException;
@@ -37,8 +36,6 @@ public class LoginAuthenticationHandlerTest {
     @Mock
     private SmtpSession session;
     @Mock
-    private SmtpInput smtpInput;
-    @Mock
     private CredentialsValidator validator;
     @InjectMocks
     private LoginAuthenticationHandler handler;
@@ -51,13 +48,12 @@ public class LoginAuthenticationHandlerTest {
     @Test
     public void testWithoutInitialSecret() throws Exception {
         String smtpLine = "AUTH LOGIN";
-        handler.start(smtpLine);
+        handler.processAuthentication(smtpLine);
 
-        when(smtpInput.hasNextSmtpLine()).thenReturn(true, true, false);
-        when(smtpInput.getSmtpLine()).thenReturn(LOGIN_ENCRYPTED, PASSWORD_ENCRYPTED);
-        handler.process(smtpInput, session);
+        handler.processAuthentication(LOGIN_ENCRYPTED);
         verify(session).sendResponse(eq(334), eq(LOGIN_REQUEST));
-        handler.process(smtpInput, session);
+
+        handler.processAuthentication(PASSWORD_ENCRYPTED);
         verify(session).sendResponse(eq(334), eq(PASSWORD_REQUEST));
         verify(validator).validateCredentials(eq(LOGIN), eq(PASSWORD));
         verify(session).setAuthenticated();
@@ -66,11 +62,9 @@ public class LoginAuthenticationHandlerTest {
     @Test
     public void testWithInitialSecret() throws Exception {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
-        handler.start(smtpLine);
+        handler.processAuthentication(smtpLine);
 
-        when(smtpInput.hasNextSmtpLine()).thenReturn(true, false);
-        when(smtpInput.getSmtpLine()).thenReturn(PASSWORD_ENCRYPTED);
-        handler.process(smtpInput, session);
+        handler.processAuthentication(PASSWORD_ENCRYPTED);
         verify(session).sendResponse(eq(334), eq("UGFzc3dvcmQ6"));
         verify(validator).validateCredentials(eq(LOGIN), eq(PASSWORD));
         verify(session).setAuthenticated();
@@ -79,11 +73,9 @@ public class LoginAuthenticationHandlerTest {
     @Test
     public void testCanceled() throws Exception {
         String smtpLine = "AUTH PLAIN";
-        handler.start(smtpLine);
+        handler.processAuthentication(smtpLine);
 
-        when(smtpInput.hasNextSmtpLine()).thenReturn(true, false);
-        when(smtpInput.getSmtpLine()).thenReturn(CANCEL_COMMAND);
-        handler.process(smtpInput, session);
+        handler.processAuthentication(CANCEL_COMMAND);
         verify(session).sendResponse(eq(501), eq("Authentication canceled by client."));
         verify(validator, never()).validateCredentials(anyString(), anyString());
         verify(session, never()).setAuthenticated();
@@ -93,7 +85,7 @@ public class LoginAuthenticationHandlerTest {
     public void testWithIncorrectUsernameFormat() throws Exception {
         String smtpLine = "AUTH LOGIN =AAA==";
         try {
-            handler.start(smtpLine);
+            handler.processAuthentication(smtpLine);
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument: Username - not a valid Base64 string", ex.getResponseMessage());
@@ -105,12 +97,10 @@ public class LoginAuthenticationHandlerTest {
     @Test(expected = SmtpException.class)
     public void testWithIncorrectPasswordFormat() throws Exception {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
-        handler.start(smtpLine);
+        handler.processAuthentication(smtpLine);
 
-        when(smtpInput.hasNextSmtpLine()).thenReturn(true, false);
-        when(smtpInput.getSmtpLine()).thenReturn("=AAA==");
         try {
-            handler.process(smtpInput, session);
+            handler.processAuthentication("=AAA==");
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument: Password - not a valid Base64 string", ex.getResponseMessage());

@@ -22,15 +22,24 @@ import static org.glassfish.grizzly.attributes.AttributeBuilder.DEFAULT_ATTRIBUT
 @NotThreadSafe
 public class SmtpLineDecoder implements Decoder<String> {
 
+    private static final SmtpLineDecoder INSTANCE = new SmtpLineDecoder();
     private static final int TERMINATION_BYTES_LENGTH = CRLF.length();
+
     private final Attribute<Integer> offset;
     private final Attribute<Integer> crPosition;
     private final Attribute<Integer> lfPosition;
 
     /**
+     * @return single instance of SmtpLineDecoder class
+     */
+    public static SmtpLineDecoder getInstance() {
+        return INSTANCE;
+    }
+
+    /**
      * Constructs SmtpLineDecoder instance.
      */
-    public SmtpLineDecoder() {
+    private SmtpLineDecoder() {
         offset = DEFAULT_ATTRIBUTE_BUILDER.createAttribute("SmtpLineDecoder.offset", 0);
         crPosition = DEFAULT_ATTRIBUTE_BUILDER.createAttribute("SmtpLineDecoder.crPosition", -1);
         lfPosition = DEFAULT_ATTRIBUTE_BUILDER.createAttribute("SmtpLineDecoder.lfPosition", -1);

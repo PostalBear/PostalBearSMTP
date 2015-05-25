@@ -2,7 +2,6 @@ package com.postalbear.smtp.grizzly;
 
 import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.grizzly.codec.Decoder;
-import com.postalbear.smtp.grizzly.codec.SmtpLineDecoder;
 import lombok.NonNull;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.ReadResult;
@@ -32,7 +31,6 @@ public class SmtpInputBuffer implements SmtpInput {
     private static final Attribute<SmtpInputBuffer> SMTP_INPUT_BUFFER =
             DEFAULT_ATTRIBUTE_BUILDER.createAttribute("SmtpInputBuffer");
 
-    private final Decoder<String> lineDecoder = new SmtpLineDecoder();
     private FilterChainContext context;
     private CompositeBuffer buffer;
 
@@ -58,7 +56,7 @@ public class SmtpInputBuffer implements SmtpInput {
      *
      * @param dataChunk to add
      */
-    public void appendDataChunk(@NonNull Buffer dataChunk) {
+    public void appendMessage(@NonNull Buffer dataChunk) {
         if (buffer == null) {
             buffer = BuffersBuffer.create(context.getMemoryManager());
         }
@@ -68,26 +66,30 @@ public class SmtpInputBuffer implements SmtpInput {
     /**
      * {@inheritDoc}
      */
-    public boolean hasNextSmtpLine() {
-        return lineDecoder.hasEnoughData(context.getConnection(), buffer);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public String getSmtpLine() {
-        return lineDecoder.getData(context.getConnection(), buffer);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public boolean isEmpty() {
-        return !buffer.hasRemaining();
+        return buffer == null || !buffer.hasRemaining();
     }
 
-    public void release() {
-        lineDecoder.release(context.getConnection());
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasEnoughData(Decoder<?> decoder) {
+        return buffer != null && decoder.hasEnoughData(context.getConnection(), buffer);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public <T> T getData(Decoder<T> decoder) {
+        T result = decoder.getData(context.getConnection(), buffer);
+        if (isEmpty()) {
+            release(decoder);
+        }
+        return result;
+    }
+
+    private void release(Decoder<?> decoder) {
+        decoder.release(context.getConnection());
         buffer = null;
     }
 
@@ -97,7 +99,7 @@ public class SmtpInputBuffer implements SmtpInput {
         Buffer dataChunk = (Buffer) readResult.getMessage();
         readResult.recycle();
         //append data chunk
-        buffer.append(dataChunk);
+        appendMessage(dataChunk);
     }
 
     /**
@@ -112,11 +114,11 @@ public class SmtpInputBuffer implements SmtpInput {
 
         @Override
         public int read() throws IOException {
-            if (!buffer.hasRemaining()) {
+            if (isEmpty()) {
                 //wait until some data arrive 
                 fillBufferBlocking();
                 //check that Buffer contains data to read
-                if (!buffer.hasRemaining()) {
+                if (isEmpty()) {
                     return -1;
                 }
             }

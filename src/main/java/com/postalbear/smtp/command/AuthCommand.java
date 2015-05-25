@@ -47,7 +47,7 @@ public class AuthCommand extends BaseCommand {
         }
         String mechanism = arguments.get(1).toUpperCase(Locale.ENGLISH);
         AuthenticationHandler handler = authFactory.create(mechanism, session);
-        handler.start(line);
+        handler.processAuthentication(line);
     }
 
     /**

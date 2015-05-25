@@ -10,7 +10,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -41,8 +40,9 @@ public class AuthCommandTest {
     @Before
     public void init() {
         when(session.isAuthenticated()).thenReturn(false);
+        when(session.getConfiguration()).thenReturn(configuration);
         when(configuration.getAuthenticationFactory()).thenReturn(authenticationFactory);
-        when(authenticationFactory.create(Matchers.anyString(), eq(session))).thenReturn(authHandler);
+        when(authenticationFactory.create(eq("LOGIN"), eq(session))).thenReturn(authHandler);
     }
 
     @Test(expected = SmtpException.class)
@@ -55,6 +55,12 @@ public class AuthCommandTest {
             assertEquals("Refusing any other AUTH command.", ex.getResponseMessage());
             throw ex;
         }
+    }
+
+    @Test
+    public void testAuthentication() throws Exception {
+        command.handle("AUTH LOGIN", session, input);
+        verify(authHandler).processAuthentication(eq("AUTH LOGIN"));
     }
 
     @Test

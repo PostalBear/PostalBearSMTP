@@ -1,6 +1,7 @@
 package com.postalbear.smtp;
 
 import com.postalbear.smtp.auth.AuthenticationHandlerFactory;
+import com.postalbear.smtp.grizzly.auth.GrizzlyAuthenticationHandlerFactory;
 import lombok.NonNull;
 import org.apache.commons.lang3.Validate;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -108,7 +109,7 @@ public class SmtpServerConfiguration {
         }
 
         public Builder setAuthenticationFactory(@NonNull AuthenticationHandlerFactory authenticationFactory) {
-            configuration.authenticationFactory = authenticationFactory;
+            configuration.authenticationFactory = new GrizzlyAuthenticationHandlerFactory(authenticationFactory);
             return this;
         }
 
@@ -159,13 +160,13 @@ public class SmtpServerConfiguration {
             Validate.notNull(instance.handlerFactory, "handlerFactory is null");
             //
             Validate.isTrue(Integer.MAX_VALUE >= instance.maxMessageSize && instance.maxMessageSize >= 0,
-                    "maxMessageSize should >=0");
+                            "maxMessageSize should >=0");
             //
             Validate.isTrue(Integer.MAX_VALUE >= instance.maxRecipients && instance.maxRecipients >= 0,
-                    "maxRecipients should >=0");
+                            "maxRecipients should >=0");
             if (instance.authenticationEnforced) {
                 Validate.notNull(instance.authenticationFactory,
-                        "Authentication can't be enabled when AuthenticationFactory is not configured");
+                                 "Authentication can't be enabled when AuthenticationFactory is not configured");
             }
             if (instance.smtpsEnabled) {
                 Validate.notNull(instance.sslConfig, "SSL configuration should be set if SMTPS enabled");

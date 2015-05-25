@@ -1,7 +1,6 @@
 package com.postalbear.smtp.grizzly;
 
 import com.postalbear.smtp.ConfigurationProvider;
-import com.postalbear.smtp.PipeliningProcessor;
 import com.postalbear.smtp.SmtpServerConfiguration;
 import com.postalbear.smtp.command.CommandRegistryFactory;
 import org.apache.commons.lang3.Validate;

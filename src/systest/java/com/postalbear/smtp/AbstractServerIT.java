@@ -9,8 +9,6 @@ import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.mail.Session;
@@ -20,14 +18,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Grigory Fadeev
@@ -48,13 +44,10 @@ public abstract class AbstractServerIT {
             "Hello from integration test !",
             "");
 
-    //Be aware that this is a partial mock
-    @Mock
-    protected CapturingHandler transactionHandler;
-
     protected InternetAddress sender;
     protected InternetAddress recipient;
 
+    private CapturingHandler transactionHandler;
     private SmtpServer server;
     private String localhost;
     private int port;
@@ -69,13 +62,7 @@ public abstract class AbstractServerIT {
         localhost = new InetSocketAddress(port).getHostName();
         sender = new InternetAddress("envelope_sender@domain.com");
         recipient = new InternetAddress("envelope_recipient@domain.com");
-        /**
-         * I've decided to use partial mocking since for Data command instance of
-         * SmtpTransactionHandler should consume full message content otherwise
-         * rest will be interpreted as following SMTP commands (Pipelining) and lead to errors.
-         */
-        doCallRealMethod().when(transactionHandler).data(any(InputStream.class));
-        when(transactionHandler.getMessageAsString()).thenCallRealMethod();
+        transactionHandler = new CapturingHandler();
     }
 
     @After
@@ -112,9 +99,10 @@ public abstract class AbstractServerIT {
     }
 
     protected void assertMessageReceived() {
-        Mockito.verify(transactionHandler).helo(eq(CLIENT_HELO));
-        Mockito.verify(transactionHandler).from(eq(sender));
-        Mockito.verify(transactionHandler).recipient(eq(recipient));
+        assertEquals(CLIENT_HELO, transactionHandler.getClientHelo());
+        assertEquals(sender, transactionHandler.getSender());
+        assertTrue(transactionHandler.getRecipients().size() == 1);
+        assertTrue(transactionHandler.getRecipients().contains(recipient));
         assertEquals(MESSAGE_CONTENT, transactionHandler.getMessageAsString());
     }
 
@@ -149,15 +137,33 @@ public abstract class AbstractServerIT {
         }
     }
 
-    /**
-     * Partially implements SmtpTransactionHandler, rest is mocked by Mockito library.
-     * I decided to use partial mocking since:
-     * 1. handler should consume complete mail content to prevent errors, non consumed content interpreted as followup SMTP commands.
-     * 2. it's not convenient to consume mail content just with plain Mockito API.
-     */
-    abstract class CapturingHandler implements SmtpTransactionHandler {
+    class CapturingHandler implements SmtpTransactionHandler {
 
+        private String clientHelo;
+        private InternetAddress sender;
+        private int messageSize;
+        private List<InternetAddress> recipients = new ArrayList<>();
         private String messageContent;
+
+        @Override
+        public void helo(String clientHelo) {
+            this.clientHelo = clientHelo;
+        }
+
+        @Override
+        public void messageSize(int size) {
+            messageSize = size;
+        }
+
+        @Override
+        public void from(InternetAddress from) {
+            sender = from;
+        }
+
+        @Override
+        public void recipient(InternetAddress recipient) {
+            recipients.add(recipient);
+        }
 
         @Override
         public void data(InputStream data) throws IOException {
@@ -166,6 +172,22 @@ public abstract class AbstractServerIT {
 
         public String getMessageAsString() {
             return messageContent;
+        }
+
+        public String getClientHelo() {
+            return clientHelo;
+        }
+
+        public InternetAddress getSender() {
+            return sender;
+        }
+
+        public int getMessageSize() {
+            return messageSize;
+        }
+
+        public List<InternetAddress> getRecipients() {
+            return recipients;
         }
     }
 

@@ -1,7 +1,11 @@
-package com.postalbear.smtp;
+package com.postalbear.smtp.grizzly;
 
+import com.postalbear.smtp.SmtpInput;
+import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.command.Command;
 import com.postalbear.smtp.command.CommandRegistry;
+import com.postalbear.smtp.grizzly.PipeliningProcessor;
+import com.postalbear.smtp.grizzly.codec.Decoder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +33,7 @@ public class PipeliningProcessorTest {
     private SmtpInput smtpInput;
     @Mock
     private SmtpSession session;
+
     @InjectMocks
     private PipeliningProcessor processor;
 
@@ -39,8 +44,8 @@ public class PipeliningProcessorTest {
 
     @Test
     public void testProcess() throws Exception {
-        when(smtpInput.hasNextSmtpLine()).thenReturn(true, false);
-        when(smtpInput.getSmtpLine()).thenReturn("TEST");
+        when(smtpInput.hasEnoughData(any(Decoder.class))).thenReturn(true, false);
+        when(smtpInput.getData(any(Decoder.class))).thenReturn("TEST");
         processor.process(smtpInput, session);
 
         verify(command).handle(eq("TEST"), same(session), same(smtpInput));
@@ -48,7 +53,7 @@ public class PipeliningProcessorTest {
 
     @Test
     public void testProcessEmptyInput() throws Exception {
-        when(smtpInput.hasNextSmtpLine()).thenReturn(false);
+        when(smtpInput.hasEnoughData(any(Decoder.class))).thenReturn(false);
         processor.process(smtpInput, session);
 
         verify(command, never()).handle(anyString(), any(SmtpSession.class), any(SmtpInput.class));

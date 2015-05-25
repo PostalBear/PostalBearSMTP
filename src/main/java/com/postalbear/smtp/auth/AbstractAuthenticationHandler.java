@@ -1,13 +1,10 @@
 package com.postalbear.smtp.auth;
 
-import com.postalbear.smtp.SmtpInput;
-import com.postalbear.smtp.SmtpProcessor;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
 import lombok.NonNull;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.IOException;
 
 /**
  * Base class for authentication handlers.
@@ -15,7 +12,7 @@ import java.io.IOException;
  * @author Grigory Fadeev
  */
 @NotThreadSafe
-public abstract class AbstractAuthenticationHandler<T extends AuthStage> implements AuthenticationHandler, SmtpProcessor {
+public abstract class AbstractAuthenticationHandler<T extends AuthStage> implements AuthenticationHandler {
 
     // RFC 2554 explicitly states this:
     private static final String CANCEL_COMMAND = "*";
@@ -37,42 +34,16 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
      * {@inheritDoc}
      */
     @Override
-    public void start(String line) throws SmtpException {
-        try {
-            if (stage.handle(this, line)) {
-                session.setSmtpProcessor(this);
-            }
-        } catch (SmtpException ex) {
-            session.setSmtpProcessor(null);
-            throw ex;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void process(SmtpInput smtpInput, SmtpSession ignored) throws IOException {
-        try {
-            while (smtpInput.hasNextSmtpLine()) {
-                String line = smtpInput.getSmtpLine();
-                if (checkIsAuthCanceled(line) || !stage.handle(this, line)) {
-                    session.setSmtpProcessor(null);
-                    return;
-                }
-            }
-        } catch (SmtpException ex) {
-            session.setSmtpProcessor(null);
-            throw ex;
-        }
-    }
-
-    private boolean checkIsAuthCanceled(String line) {
-        if (CANCEL_COMMAND.equals(line)) {
+    public boolean processAuthentication(String line) throws SmtpException {
+        if (checkIsCanceled(line)) {
             session.sendResponse(501, "Authentication canceled by client."); //see RFC4954
-            return true;
+            return false;
         }
-        return false;
+        return stage.handle(this, line);
+    }
+
+    private boolean checkIsCanceled(String line) {
+        return CANCEL_COMMAND.equals(line);
     }
 
     /**

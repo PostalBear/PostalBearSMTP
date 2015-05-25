@@ -2,35 +2,37 @@
  */
 package com.postalbear.smtp;
 
+import com.postalbear.smtp.grizzly.codec.Decoder;
+
 import java.io.InputStream;
 
 /**
- * Implementations provide access to SMTP input buffer via @see SmtpLineReader or @see InputStream.
+ * Implementations provide access to SMTP input buffer.
  *
  * @author Grigory Fadeev
  */
 public interface SmtpInput {
 
     /**
-     * Check whether next SMTP line is available for reading.
+     * Check whether input is empty.
      *
-     * @return true if complete SMTP line is available
-     */
-    boolean hasNextSmtpLine();
-
-    /**
-     * Reads next SMTP line from input.
-     *
-     * @return SMTP line
-     */
-    String getSmtpLine();
-
-    /**
-     * Check whether input contains any data.
-     *
-     * @return true if input does not contain any data
+     * @return true if empty
      */
     boolean isEmpty();
+
+    /**
+     * Check whether input has enough available data for reading.
+     *
+     * @return true if enough
+     */
+    boolean hasEnoughData(Decoder<?> decoder);
+
+    /**
+     * Reads next data chunk from input.
+     *
+     * @return data chunk
+     */
+    <T> T getData(Decoder<T> decoder);
 
     /**
      * To get raw data from buffer via InputStream.
