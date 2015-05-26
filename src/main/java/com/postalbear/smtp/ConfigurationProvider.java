@@ -12,5 +12,5 @@ public interface ConfigurationProvider {
      *
      * @return configuration
      */
-    public SmtpServerConfiguration getConfiguration();
+    SmtpServerConfiguration getConfiguration();
 }
