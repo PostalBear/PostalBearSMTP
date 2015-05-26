@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
 import lombok.NonNull;
@@ -36,11 +35,11 @@ public class RequireAuthCommandWrapper implements Command {
      * {@inheritDoc}
      */
     @Override
-    public void handle(@NonNull String line, @NonNull SmtpSession session, @NonNull SmtpInput input) throws IOException {
+    public void handle(@NonNull String line, @NonNull SmtpSession session) throws IOException {
         if (!session.isAuthenticated() && session.getConfiguration().isAuthenticationEnforced()) {
             throw new SmtpException(530, "5.7.0 Authentication required");
         }
-        command.handle(line, session, input);
+        command.handle(line, session);
     }
 
     @Override

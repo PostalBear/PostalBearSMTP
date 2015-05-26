@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpServerConfiguration;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
@@ -33,7 +32,7 @@ public class HelpCommand extends BaseCommand {
      * {@inheritDoc}
      */
     @Override
-    public void handle(@NonNull String smtpLine, @NonNull SmtpSession session, @NonNull SmtpInput input) throws IOException {
+    public void handle(@NonNull String smtpLine, @NonNull SmtpSession session) throws IOException {
         String topic = StringUtils.defaultIfBlank(CommandUtils.removeCommandFromLine(smtpLine), VERB);
         try {
             handler.getCommand(topic).printHelpMessage(session);

@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpServerConfiguration;
 import com.postalbear.smtp.SmtpSession;
 import org.junit.Assert;
@@ -24,8 +23,6 @@ public class QuitCommandTest {
 
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput input;
 
     private QuitCommand command = new QuitCommand();
 
@@ -35,7 +32,7 @@ public class QuitCommandTest {
         when(session.getConfiguration()).thenReturn(configuration);
         when(configuration.getHostName()).thenReturn("localhost");
 
-        command.handle("QUIT", session, input);
+        command.handle("QUIT", session);
         verify(session).sendResponse(eq(221), eq("localhost Bye"));
         verify(session).closeSession();
     }

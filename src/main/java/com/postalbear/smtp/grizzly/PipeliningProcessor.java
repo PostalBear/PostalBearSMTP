@@ -38,7 +38,7 @@ public class PipeliningProcessor implements SmtpProcessor {
         while (smtpInput.hasEnoughData(lineDecoder)) {
             String smtpLine = smtpInput.getData(lineDecoder);
             Command command = commandRegistry.getCommand(smtpLine);
-            command.handle(smtpLine, session, smtpInput);
+            command.handle(smtpLine, session);
         }
     }
 }

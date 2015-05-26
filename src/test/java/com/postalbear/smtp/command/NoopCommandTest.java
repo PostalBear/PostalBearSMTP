@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,14 +20,12 @@ public class NoopCommandTest {
 
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput input;
 
     private NoopCommand command = new NoopCommand();
 
     @Test
     public void testHandleValid() throws Exception {
-        command.handle("NOOP", session, input);
+        command.handle("NOOP", session);
         verify(session).sendResponse(eq(250), eq("OK"));
     }
 

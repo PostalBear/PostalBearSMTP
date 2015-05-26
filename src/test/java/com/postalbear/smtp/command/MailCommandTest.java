@@ -2,13 +2,13 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.command.param.SizeParameterHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -30,20 +30,18 @@ public class MailCommandTest {
     @Mock
     private SmtpSession session;
     @Mock
-    private SmtpInput input;
-    @Mock
     private SizeParameterHandler sizeHandler;
+    @InjectMocks
     private MailCommand command;
 
     @Before
     public void init() {
-        command = new MailCommand(sizeHandler);
         when(session.isMailTransactionInProgress()).thenReturn(false);
     }
 
     @Test
     public void testSyntaxIncorrect() throws Exception {
-        command.handle(ADDRESS, session, input);
+        command.handle(ADDRESS, session);
 
         verify(session).sendResponse(eq(501), eq("5.5.2 Syntax error: MAIL FROM: <address> [parameters]"));
     }
@@ -52,7 +50,7 @@ public class MailCommandTest {
     public void testTransactionInProgress() throws Exception {
         when(session.isMailTransactionInProgress()).thenReturn(true);
 
-        command.handle("MAIL FROM:" + ADDRESS, session, input);
+        command.handle("MAIL FROM:" + ADDRESS, session);
 
         verify(session).sendResponse(eq(503), eq("5.5.1 Invalid sequence: sender already specified."));
     }
@@ -61,7 +59,7 @@ public class MailCommandTest {
     public void testParseLineWithAngelBrackets() throws Exception {
         String smtpLine = "MAIL FROM: <" + ADDRESS + ">";
 
-        command.handle(smtpLine, session, input);
+        command.handle(smtpLine, session);
 
         verify(session).from(eq(new InternetAddress(ADDRESS)));
         verify(session).sendResponse(eq(250), eq("sender <" + ADDRESS + "> OK"));
@@ -72,7 +70,7 @@ public class MailCommandTest {
     public void testParseLinePlain() throws Exception {
         String smtpLine = "MAIL FROM:" + ADDRESS;
 
-        command.handle(smtpLine, session, input);
+        command.handle(smtpLine, session);
 
         verify(session).from(eq(new InternetAddress(ADDRESS)));
         verify(session).sendResponse(eq(250), eq("sender <" + ADDRESS + "> OK"));
@@ -84,7 +82,7 @@ public class MailCommandTest {
         String address = "(address";
         String smtpLine = "MAIL FROM:" + address + "";
 
-        command.handle(smtpLine, session, input);
+        command.handle(smtpLine, session);
 
         verify(session).sendResponse(eq(553), eq("5.1.7 Syntax error: sender address <" + address + "> is invalid"));
     }
@@ -93,7 +91,7 @@ public class MailCommandTest {
     public void testUnsuportedParameter() throws Exception {
         String smtpLine = "MAIL FROM:" + ADDRESS + " AUTH=<>";
 
-        command.handle(smtpLine, session, input);
+        command.handle(smtpLine, session);
 
         verify(session).sendResponse(eq(504), eq("5.5.4 Command parameter \"AUTH=<>\" not implemented"));
     }
@@ -103,7 +101,7 @@ public class MailCommandTest {
         String smtpLine = "MAIL FROM:" + ADDRESS + " SIZE=100";
         when(sizeHandler.match(eq("size=100"))).thenReturn(true);
 
-        command.handle(smtpLine, session, input);
+        command.handle(smtpLine, session);
 
         verify(session).from(eq(new InternetAddress(ADDRESS)));
         verify(session).sendResponse(eq(250), eq("sender <" + ADDRESS + "> OK"));

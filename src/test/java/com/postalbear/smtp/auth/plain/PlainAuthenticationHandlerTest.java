@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.auth.plain;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.CredentialsValidator;
 import com.postalbear.smtp.exception.SmtpException;
@@ -32,8 +31,6 @@ public class PlainAuthenticationHandlerTest {
 
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput smtpInput;
     @Mock
     private CredentialsValidator validator;
     @InjectMocks

@@ -1,6 +1,5 @@
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.AuthenticationHandlerFactory;
 import com.postalbear.smtp.exception.SmtpException;
@@ -30,7 +29,7 @@ public class EhloCommand extends BaseCommand {
      * {@inheritDoc}
      */
     @Override
-    public void handle(@NonNull String line, @NonNull SmtpSession session, @NonNull SmtpInput input) throws IOException {
+    public void handle(@NonNull String line, @NonNull SmtpSession session) throws IOException {
         String arg = CommandUtils.removeCommandFromLine(line);
         if (arg.isEmpty()) {
             throw new SmtpException(501, "5.5.2 Syntax error: EHLO hostname");

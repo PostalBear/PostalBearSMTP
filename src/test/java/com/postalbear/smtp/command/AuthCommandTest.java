@@ -1,6 +1,5 @@
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpServerConfiguration;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.AuthenticationHandler;
@@ -32,8 +31,6 @@ public class AuthCommandTest {
     private SmtpServerConfiguration configuration;
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput input;
 
     private AuthCommand command = new AuthCommand();
 
@@ -49,7 +46,7 @@ public class AuthCommandTest {
     public void testAuthenticated() throws Exception {
         when(session.isAuthenticated()).thenReturn(true);
         try {
-            command.handle("any string", session, input);
+            command.handle("any string", session);
         } catch (SmtpException ex) {
             assertEquals(503, ex.getResponseCode());
             assertEquals("Refusing any other AUTH command.", ex.getResponseMessage());
@@ -59,7 +56,7 @@ public class AuthCommandTest {
 
     @Test
     public void testAuthentication() throws Exception {
-        command.handle("AUTH LOGIN", session, input);
+        command.handle("AUTH LOGIN", session);
         verify(authHandler).processAuthentication(eq("AUTH LOGIN"));
     }
 

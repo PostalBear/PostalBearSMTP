@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
 import org.junit.Assert;
@@ -23,15 +22,13 @@ public class ExpandCommandTest {
 
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput input;
 
     private ExpandCommand command = new ExpandCommand();
 
     @Test(expected = SmtpException.class)
     public void testHandle() throws Exception {
         try {
-            command.handle("EXPN", session, input);
+            command.handle("EXPN", session);
         } catch (SmtpException ex) {
             assertEquals(502, ex.getResponseCode());
             assertEquals("EXPN command is not supported.", ex.getResponseMessage());

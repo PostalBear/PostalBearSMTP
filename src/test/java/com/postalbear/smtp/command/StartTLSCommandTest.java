@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpServerConfiguration;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
@@ -27,8 +26,6 @@ public class StartTLSCommandTest {
     private SmtpServerConfiguration configuration;
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput input;
 
     private final StartTLSCommand command = new StartTLSCommand();
 
@@ -42,7 +39,7 @@ public class StartTLSCommandTest {
     @Test(expected = SmtpException.class)
     public void testInvalidSyntax() throws Exception {
         try {
-            command.handle("STARTTLS unexpected text", session, input);
+            command.handle("STARTTLS unexpected text", session);
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("Syntax error (no parameters allowed)", ex.getResponseMessage());
@@ -54,7 +51,7 @@ public class StartTLSCommandTest {
     public void testNotAllowedByConfiguration() throws Exception {
         when(configuration.isStartTlsEnabled()).thenReturn(false);
         try {
-            command.handle("STARTTLS", session, input);
+            command.handle("STARTTLS", session);
         } catch (SmtpException ex) {
             assertEquals(454, ex.getResponseCode());
             assertEquals("TLS not supported", ex.getResponseMessage());
@@ -67,7 +64,7 @@ public class StartTLSCommandTest {
     public void testTlsAlreadyInProgress() throws Exception {
         when(session.isConnectionSecured()).thenReturn(true);
         try {
-            command.handle("STARTTLS", session, input);
+            command.handle("STARTTLS", session);
         } catch (SmtpException ex) {
             assertEquals(454, ex.getResponseCode());
             assertEquals("TLS not available due to temporary reason: TLS already active", ex.getResponseMessage());
@@ -78,7 +75,7 @@ public class StartTLSCommandTest {
 
     @Test
     public void testHandle() throws Exception {
-        command.handle("STARTTLS", session, input);
+        command.handle("STARTTLS", session);
         verify(session).sendResponse(eq(220), eq("Ready to start TLS"));
         verify(session).startTls();
     }

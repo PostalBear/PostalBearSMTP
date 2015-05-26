@@ -1,6 +1,5 @@
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import lombok.NonNull;
 
@@ -25,7 +24,7 @@ public class ResetCommand extends BaseCommand {
      * {@inheritDoc}
      */
     @Override
-    public void handle(@NonNull String line, @NonNull SmtpSession session, @NonNull SmtpInput input) throws IOException {
+    public void handle(@NonNull String line, @NonNull SmtpSession session) throws IOException {
         session.resetMailTransaction();
         session.sendResponse(250, "OK");
     }

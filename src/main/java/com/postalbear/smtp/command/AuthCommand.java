@@ -1,6 +1,5 @@
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.AuthenticationHandler;
 import com.postalbear.smtp.auth.AuthenticationHandlerFactory;
@@ -32,7 +31,7 @@ public class AuthCommand extends BaseCommand {
      * {@inheritDoc}
      */
     @Override
-    public void handle(@NonNull String line, @NonNull SmtpSession session, @NonNull SmtpInput input) throws IOException {
+    public void handle(@NonNull String line, @NonNull SmtpSession session) throws IOException {
         if (session.isAuthenticated()) {
             throw new SmtpException(503, "Refusing any other AUTH command.");
         }

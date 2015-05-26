@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpServerConfiguration;
 import com.postalbear.smtp.SmtpSession;
 import org.junit.Assert;
@@ -32,8 +31,6 @@ public class ReceiptCommandTest {
     private SmtpServerConfiguration configuration;
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput input;
 
     private ReceiptCommand command = new ReceiptCommand();
 
@@ -46,7 +43,7 @@ public class ReceiptCommandTest {
 
     @Test
     public void testInvalidSyntax() throws Exception {
-        command.handle(ADDRESS, session, input);
+        command.handle(ADDRESS, session);
 
         verify(session).sendResponse(eq(501), eq("5.5.2 Syntax error: RCPT TO: <address>"));
         verify(session, never()).recipient(any(InternetAddress.class));
@@ -56,7 +53,7 @@ public class ReceiptCommandTest {
     public void testTransactionNotInProgress() throws Exception {
         when(session.isMailTransactionInProgress()).thenReturn(false);
 
-        command.handle(SMTP_LINE, session, input);
+        command.handle(SMTP_LINE, session);
 
         verify(session).sendResponse(eq(503), eq("5.5.1 Invalid sequence: need MAIL command fist"));
         verify(session, never()).recipient(any(InternetAddress.class));
@@ -67,7 +64,7 @@ public class ReceiptCommandTest {
         when(session.getRecipientsCount()).thenReturn(10);
         when(configuration.getMaxRecipients()).thenReturn(1);
 
-        command.handle(SMTP_LINE, session, input);
+        command.handle(SMTP_LINE, session);
 
         verify(session).sendResponse(eq(452), eq("4.5.3 Error: too many recipients"));
         verify(session, never()).recipient(any(InternetAddress.class));
@@ -77,7 +74,7 @@ public class ReceiptCommandTest {
     public void testLineWithAngelBrackets() throws Exception {
         String smtpLine = "RCPT TO: <" + ADDRESS + ">";
 
-        command.handle(smtpLine, session, input);
+        command.handle(smtpLine, session);
 
         verify(session).recipient(eq(new InternetAddress(ADDRESS)));
         verify(session).sendResponse(eq(250), eq("recipient <" + ADDRESS + "> OK"));
@@ -88,7 +85,7 @@ public class ReceiptCommandTest {
     public void testPlainLine() throws Exception {
         String smtpLine = "RCPT TO:" + ADDRESS;
 
-        command.handle(smtpLine, session, input);
+        command.handle(smtpLine, session);
 
         verify(session).recipient(eq(new InternetAddress(ADDRESS)));
         verify(session).sendResponse(eq(250), eq("recipient <" + ADDRESS + "> OK"));
@@ -100,7 +97,7 @@ public class ReceiptCommandTest {
         String address = "(address";
         String smtpLine = "RCPT TO:" + address + "";
 
-        command.handle(smtpLine, session, input);
+        command.handle(smtpLine, session);
 
         verify(session).sendResponse(eq(553), eq("5.1.3 Syntax error: recipient address <" + address + "> is invalid"));
         verify(session, never()).recipient(any(InternetAddress.class));
@@ -110,7 +107,7 @@ public class ReceiptCommandTest {
     public void testUnsuportedParameter() throws Exception {
         String smtpLine = "RCPT TO:" + ADDRESS + " PARAM=1";
 
-        command.handle(smtpLine, session, input);
+        command.handle(smtpLine, session);
 
         verify(session).sendResponse(eq(555), eq("Command parameter \"PARAM=1\" not implemented"));
         verify(session, never()).recipient(any(InternetAddress.class));

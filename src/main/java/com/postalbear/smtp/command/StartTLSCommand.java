@@ -1,6 +1,5 @@
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
 import lombok.NonNull;
@@ -24,7 +23,7 @@ public class StartTLSCommand extends BaseCommand {
      * {@inheritDoc}
      */
     @Override
-    public void handle(@NonNull String line, @NonNull SmtpSession session, @NonNull SmtpInput input) throws IOException {
+    public void handle(@NonNull String line, @NonNull SmtpSession session) throws IOException {
         if (!CommandUtils.removeCommandFromLine(line).isEmpty()) {
             throw new SmtpException(501, "Syntax error (no parameters allowed)");
         }

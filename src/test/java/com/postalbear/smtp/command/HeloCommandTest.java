@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpServerConfiguration;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
@@ -28,8 +27,6 @@ public class HeloCommandTest {
     private SmtpServerConfiguration configuration;
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput input;
 
     private HeloCommand command = new HeloCommand();
 
@@ -41,7 +38,7 @@ public class HeloCommandTest {
     @Test(expected = SmtpException.class)
     public void testInvalidSyntax() throws Exception {
         try {
-            command.handle("HELO", session, input);
+            command.handle("HELO", session);
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Syntax error: HELO <hostname>", ex.getResponseMessage());
@@ -52,7 +49,7 @@ public class HeloCommandTest {
     @Test
     public void testHandle() throws Exception {
         when(configuration.getHostName()).thenReturn("localhost");
-        command.handle("HELO smtpclient", session, input);
+        command.handle("HELO smtpclient", session);
         verify(session).sendResponse(eq(250), eq("localhost"));
     }
 

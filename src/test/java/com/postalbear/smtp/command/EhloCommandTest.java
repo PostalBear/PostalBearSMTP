@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpServerConfiguration;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
@@ -28,8 +27,6 @@ public class EhloCommandTest {
     private SmtpServerConfiguration configuration;
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput input;
 
     private EhloCommand command = new EhloCommand();
 
@@ -42,7 +39,7 @@ public class EhloCommandTest {
     @Test(expected = SmtpException.class)
     public void testInvalidSyntax() throws Exception {
         try {
-            command.handle("EHLO", session, input);
+            command.handle("EHLO", session);
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Syntax error: EHLO hostname", ex.getResponseMessage());
@@ -52,7 +49,7 @@ public class EhloCommandTest {
 
     @Test
     public void testHandleWithDefaultExtensions() throws Exception {
-        command.handle("EHLO mydomain", session, input);
+        command.handle("EHLO mydomain", session);
 
         verify(session).resetMailTransaction();
         verify(session).helo(eq("mydomain"));
@@ -66,7 +63,7 @@ public class EhloCommandTest {
     public void testHandleWithStartTLS() throws Exception {
         when(configuration.isStartTlsEnabled()).thenReturn(true);
 
-        command.handle("EHLO mydomain", session, input);
+        command.handle("EHLO mydomain", session);
 
         verify(session).resetMailTransaction();
         verify(session).helo(eq("mydomain"));
@@ -81,7 +78,7 @@ public class EhloCommandTest {
     public void testHandleWithSize() throws Exception {
         when(configuration.getMaxMessageSize()).thenReturn(100);
 
-        command.handle("EHLO mydomain", session, input);
+        command.handle("EHLO mydomain", session);
 
         verify(session).resetMailTransaction();
         verify(session).helo(eq("mydomain"));

@@ -4,7 +4,6 @@ import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.command.Command;
 import com.postalbear.smtp.command.CommandRegistry;
-import com.postalbear.smtp.grizzly.PipeliningProcessor;
 import com.postalbear.smtp.grizzly.codec.Decoder;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +47,7 @@ public class PipeliningProcessorTest {
         when(smtpInput.getData(any(Decoder.class))).thenReturn("TEST");
         processor.process(smtpInput, session);
 
-        verify(command).handle(eq("TEST"), same(session), same(smtpInput));
+        verify(command).handle(eq("TEST"), same(session));
     }
 
     @Test
@@ -56,7 +55,7 @@ public class PipeliningProcessorTest {
         when(smtpInput.hasEnoughData(any(Decoder.class))).thenReturn(false);
         processor.process(smtpInput, session);
 
-        verify(command, never()).handle(anyString(), any(SmtpSession.class), any(SmtpInput.class));
+        verify(command, never()).handle(anyString(), any(SmtpSession.class));
     }
 
     @Test(expected = NullPointerException.class)

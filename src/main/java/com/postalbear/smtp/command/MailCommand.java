@@ -1,6 +1,5 @@
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.command.param.SizeParameterHandler;
 import com.postalbear.smtp.exception.SmtpException;
@@ -39,7 +38,7 @@ public class MailCommand extends BaseCommand {
      * {@inheritDoc}
      */
     @Override
-    public void handle(@NonNull String smtpLine, @NonNull SmtpSession session, @NonNull SmtpInput input) throws IOException {
+    public void handle(@NonNull String smtpLine, @NonNull SmtpSession session) throws IOException {
         try {
             String line = CommandUtils.removeCommandFromLine(smtpLine);
             validate(session, line);

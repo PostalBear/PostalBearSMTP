@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,14 +20,12 @@ public class ResetCommandTest {
 
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput input;
 
     private ResetCommand command = new ResetCommand();
 
     @Test
     public void testHandle() throws Exception {
-        command.handle("RSET", session, input);
+        command.handle("RSET", session);
         verify(session).resetMailTransaction();
         verify(session).sendResponse(eq(250), eq("OK"));
     }

@@ -2,7 +2,6 @@
  */
 package com.postalbear.smtp.command;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.exception.SmtpException;
 import org.junit.Assert;
@@ -23,15 +22,13 @@ public class VrfyCommandTest {
 
     @Mock
     private SmtpSession session;
-    @Mock
-    private SmtpInput input;
 
     private VerifyCommand command = new VerifyCommand();
 
     @Test(expected = SmtpException.class)
     public void testHandle() throws Exception {
         try {
-            command.handle("VRFY", session, input);
+            command.handle("VRFY", session);
         } catch (SmtpException ex) {
             assertEquals(502, ex.getResponseCode());
             assertEquals("VRFY command is disabled", ex.getResponseMessage());
