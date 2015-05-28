@@ -19,6 +19,7 @@ public class GrizzlySmtpSession extends AbstractSmtpSession {
 
     private final List<String> responseBuffer = new ArrayList<>();
     private final SmtpServer server;
+
     private FilterChainContext context;
 
     public GrizzlySmtpSession(SmtpServer server) {
@@ -75,7 +76,7 @@ public class GrizzlySmtpSession extends AbstractSmtpSession {
         context.getConnection().closeSilently();
     }
 
-    void refreshContext(FilterChainContext actualContex) {
-        this.context = actualContex;
+    void refreshContext(FilterChainContext actualContext) {
+        this.context = actualContext;
     }
 }

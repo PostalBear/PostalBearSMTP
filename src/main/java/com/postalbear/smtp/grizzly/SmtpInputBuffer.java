@@ -1,6 +1,5 @@
 package com.postalbear.smtp.grizzly;
 
-import com.postalbear.smtp.SmtpInput;
 import com.postalbear.smtp.grizzly.codec.Decoder;
 import lombok.NonNull;
 import org.glassfish.grizzly.Buffer;

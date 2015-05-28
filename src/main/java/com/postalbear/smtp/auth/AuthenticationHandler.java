@@ -17,10 +17,19 @@ import javax.annotation.concurrent.NotThreadSafe;
 public interface AuthenticationHandler {
 
     /**
-     * perform SMTP authentication procedure.
+     * Starts SMTP authentication procedure.
      *
      * @param smtpLine to process
      * @throws SmtpException if authentication failed due to some reasons
      */
-    boolean processAuthentication(String smtpLine) throws SmtpException;
+    void kickstartAuth(String smtpLine) throws SmtpException;
+
+    /**
+     * Continue SMTP authentication procedure.
+     *
+     * @param smtpLine to process
+     * @return true if more lines needed
+     * @throws SmtpException if authentication failed due to some reasons
+     */
+    boolean processAuth(String smtpLine) throws SmtpException;
 }

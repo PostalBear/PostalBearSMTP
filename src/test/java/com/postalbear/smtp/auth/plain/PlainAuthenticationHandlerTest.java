@@ -46,7 +46,7 @@ public class PlainAuthenticationHandlerTest {
         String secret = Base64.getEncoder().encodeToString(("authoritation" + NUL + "login" + NUL + "password").getBytes());
         String smtpLine = "AUTH PLAIN " + secret;
 
-        handler.processAuthentication(smtpLine);
+        handler.kickstartAuth(smtpLine);
         verify(validator).validateCredentials(eq("login"), eq("password"));
         verify(session).setAuthenticated();
     }
@@ -54,10 +54,10 @@ public class PlainAuthenticationHandlerTest {
     @Test
     public void testWithoutInitialSecret() throws Exception {
         String smtpLine = "AUTH PLAIN";
-        handler.processAuthentication(smtpLine);
+        handler.kickstartAuth(smtpLine);
 
         String secret = Base64.getEncoder().encodeToString(("authorization" + NUL + "login" + NUL + "password").getBytes());
-        handler.processAuthentication(secret);
+        handler.processAuth(secret);
         verify(validator).validateCredentials(eq("login"), eq("password"));
         verify(session).sendResponse(eq(334), eq("OK"));
         verify(session).setAuthenticated();
@@ -66,9 +66,9 @@ public class PlainAuthenticationHandlerTest {
     @Test
     public void testCanceled() throws Exception {
         String smtpLine = "AUTH PLAIN";
-        handler.processAuthentication(smtpLine);
+        handler.kickstartAuth(smtpLine);
 
-        handler.processAuthentication(CANCEL_COMMAND);
+        handler.processAuth(CANCEL_COMMAND);
         verify(session).sendResponse(eq(501), eq("Authentication canceled by client."));
         verify(validator, never()).validateCredentials(anyString(), anyString());
         verify(session, never()).setAuthenticated();
@@ -79,7 +79,7 @@ public class PlainAuthenticationHandlerTest {
         String secret = Base64.getEncoder().encodeToString(("authoritation login" + NUL + "password").getBytes());
         String smtpLine = "AUTH PLAIN " + secret;
         try {
-            handler.processAuthentication(smtpLine);
+            handler.processAuth(smtpLine);
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument, does not contain NUL", ex.getResponseMessage());
@@ -92,7 +92,7 @@ public class PlainAuthenticationHandlerTest {
     public void testInvalidSecretBase64() throws Exception {
         String smtpLine = "AUTH PLAIN =AAA==";
         try {
-            handler.processAuthentication(smtpLine);
+            handler.kickstartAuth(smtpLine);
             fail("SmtpException expected");
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
@@ -108,7 +108,7 @@ public class PlainAuthenticationHandlerTest {
         String secret = Base64.getEncoder().encodeToString(("authoritation" + NUL + "login" + NUL + "password").getBytes());
         String smtpLine = "AUTH PLAIN " + secret;
         try {
-            handler.processAuthentication(smtpLine);
+            handler.kickstartAuth(smtpLine);
             fail("SmtpException expected");
         } catch (SmtpException ex) {
             assertEquals(535, ex.getResponseCode());

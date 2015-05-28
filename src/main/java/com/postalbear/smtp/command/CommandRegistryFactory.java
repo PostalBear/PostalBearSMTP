@@ -51,7 +51,7 @@ public class CommandRegistryFactory {
          * @param checkForStartTLS whether to enforce STARTTLS
          * @param checkForAuth     whether to enforce AUTH
          */
-        void registerCommand(Command command, boolean checkForStartTLS, boolean checkForAuth) {
+        private void registerCommand(Command command, boolean checkForStartTLS, boolean checkForAuth) {
             String name = command.getName().toUpperCase(Locale.ENGLISH);
             Command tmp = command;
             if (checkForAuth) {

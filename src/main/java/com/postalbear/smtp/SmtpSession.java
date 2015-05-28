@@ -1,5 +1,7 @@
 package com.postalbear.smtp;
 
+import com.postalbear.smtp.auth.AuthenticationHandler;
+
 /**
  * Interface of SMTP session.
  *
@@ -13,11 +15,14 @@ public interface SmtpSession extends ConfigurationProvider, SmtpTransactionHandl
     boolean isClientHeloDone();
 
     /**
-     * Check that current SMTP session is authenticated.
-     *
-     * @return true if authenticated
+     * @param authenticationHandler
      */
-    boolean isAuthenticated();
+    void setAuthenticationHandler(AuthenticationHandler authenticationHandler);
+
+    /**
+     * @return
+     */
+    AuthenticationHandler getAuthenticationHandler();
 
     /**
      * Marks session as successfully authenticated.
@@ -25,23 +30,11 @@ public interface SmtpSession extends ConfigurationProvider, SmtpTransactionHandl
     void setAuthenticated();
 
     /**
-     * Associate custom SmtpProcessor with current session which should be used for processing of incoming data.
+     * Check that current SMTP session is authenticated.
      *
-     * @param smtpProcessor
+     * @return true if authenticated
      */
-    void setSmtpProcessor(SmtpProcessor smtpProcessor);
-
-    /**
-     * @return associated SmtpProcessor instance or null
-     */
-    SmtpProcessor getSmtpProcessor();
-
-    /**
-     * Check whether mail transaction is in progress.
-     *
-     * @return true if transaction is in progress
-     */
-    boolean isMailTransactionInProgress();
+    boolean isAuthenticated();
 
     /**
      * Start new mail transaction.
@@ -52,6 +45,13 @@ public interface SmtpSession extends ConfigurationProvider, SmtpTransactionHandl
      * Reset state of current SMTP transaction.
      */
     void resetMailTransaction();
+
+    /**
+     * Check whether mail transaction is in progress.
+     *
+     * @return true if transaction is in progress
+     */
+    boolean isMailTransactionInProgress();
 
     /**
      * Return number of recipients.

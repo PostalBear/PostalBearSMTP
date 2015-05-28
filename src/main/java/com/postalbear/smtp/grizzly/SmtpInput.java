@@ -1,6 +1,6 @@
 /*
  */
-package com.postalbear.smtp;
+package com.postalbear.smtp.grizzly;
 
 import com.postalbear.smtp.grizzly.codec.Decoder;
 

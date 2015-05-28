@@ -57,7 +57,7 @@ public class AuthCommandTest {
     @Test
     public void testAuthentication() throws Exception {
         command.handle("AUTH LOGIN", session);
-        verify(authHandler).processAuthentication(eq("AUTH LOGIN"));
+        verify(authHandler).kickstartAuth(eq("AUTH LOGIN"));
     }
 
     @Test

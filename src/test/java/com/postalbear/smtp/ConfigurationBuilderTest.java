@@ -39,7 +39,7 @@ public class ConfigurationBuilderTest {
         builder = SmtpServerConfiguration.getBuilder();
         builder.setSoftwareName(SOFTWARE_NAME);
         builder.setHostName(HOSTNAME);
-        //auth
+        //processors
         builder.setAuthenticationFactory(authenticationFactory);
         builder.setAuthenticationEnforced(true);
         //
@@ -59,7 +59,7 @@ public class ConfigurationBuilderTest {
 
         assertEquals(SOFTWARE_NAME, result.getSoftwareName());
         assertEquals(HOSTNAME, result.getHostName());
-        //auth
+        //processors
         assertNotNull(result.getAuthenticationFactory());
         assertTrue(result.isAuthenticationEnforced());
         //

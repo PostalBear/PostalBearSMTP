@@ -48,12 +48,12 @@ public class LoginAuthenticationHandlerTest {
     @Test
     public void testWithoutInitialSecret() throws Exception {
         String smtpLine = "AUTH LOGIN";
-        handler.processAuthentication(smtpLine);
+        handler.kickstartAuth(smtpLine);
 
-        handler.processAuthentication(LOGIN_ENCRYPTED);
+        handler.processAuth(LOGIN_ENCRYPTED);
         verify(session).sendResponse(eq(334), eq(LOGIN_REQUEST));
 
-        handler.processAuthentication(PASSWORD_ENCRYPTED);
+        handler.processAuth(PASSWORD_ENCRYPTED);
         verify(session).sendResponse(eq(334), eq(PASSWORD_REQUEST));
         verify(validator).validateCredentials(eq(LOGIN), eq(PASSWORD));
         verify(session).setAuthenticated();
@@ -62,9 +62,9 @@ public class LoginAuthenticationHandlerTest {
     @Test
     public void testWithInitialSecret() throws Exception {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
-        handler.processAuthentication(smtpLine);
+        handler.kickstartAuth(smtpLine);
 
-        handler.processAuthentication(PASSWORD_ENCRYPTED);
+        handler.processAuth(PASSWORD_ENCRYPTED);
         verify(session).sendResponse(eq(334), eq("UGFzc3dvcmQ6"));
         verify(validator).validateCredentials(eq(LOGIN), eq(PASSWORD));
         verify(session).setAuthenticated();
@@ -73,9 +73,9 @@ public class LoginAuthenticationHandlerTest {
     @Test
     public void testCanceled() throws Exception {
         String smtpLine = "AUTH PLAIN";
-        handler.processAuthentication(smtpLine);
+        handler.kickstartAuth(smtpLine);
 
-        handler.processAuthentication(CANCEL_COMMAND);
+        handler.processAuth(CANCEL_COMMAND);
         verify(session).sendResponse(eq(501), eq("Authentication canceled by client."));
         verify(validator, never()).validateCredentials(anyString(), anyString());
         verify(session, never()).setAuthenticated();
@@ -85,7 +85,7 @@ public class LoginAuthenticationHandlerTest {
     public void testWithIncorrectUsernameFormat() throws Exception {
         String smtpLine = "AUTH LOGIN =AAA==";
         try {
-            handler.processAuthentication(smtpLine);
+            handler.kickstartAuth(smtpLine);
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument: Username - not a valid Base64 string", ex.getResponseMessage());
@@ -97,10 +97,10 @@ public class LoginAuthenticationHandlerTest {
     @Test(expected = SmtpException.class)
     public void testWithIncorrectPasswordFormat() throws Exception {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
-        handler.processAuthentication(smtpLine);
+        handler.kickstartAuth(smtpLine);
 
         try {
-            handler.processAuthentication("=AAA==");
+            handler.processAuth("=AAA==");
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument: Password - not a valid Base64 string", ex.getResponseMessage());

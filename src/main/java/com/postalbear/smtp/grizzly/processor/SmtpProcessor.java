@@ -1,4 +1,7 @@
-package com.postalbear.smtp;
+package com.postalbear.smtp.grizzly.processor;
+
+import com.postalbear.smtp.SmtpSession;
+import com.postalbear.smtp.grizzly.SmtpInput;
 
 import java.io.IOException;
 

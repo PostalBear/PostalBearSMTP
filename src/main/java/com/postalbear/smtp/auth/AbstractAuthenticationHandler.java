@@ -34,16 +34,29 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
      * {@inheritDoc}
      */
     @Override
-    public boolean processAuthentication(String line) throws SmtpException {
-        if (checkIsCanceled(line)) {
-            session.sendResponse(501, "Authentication canceled by client."); //see RFC4954
-            return false;
-        }
-        return stage.handle(this, line);
+    public void kickstartAuth(String smtpLine) throws SmtpException {
+        stage.handle(this, smtpLine);
     }
 
-    private boolean checkIsCanceled(String line) {
-        return CANCEL_COMMAND.equals(line);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean processAuth(String smtpLine) throws SmtpException {
+        if (checkIsCanceled(smtpLine)) {
+            session.sendResponse(501, "Authentication canceled by client."); //see RFC4954
+            session.setAuthenticationHandler(null);
+            return false;
+        }
+        if (!stage.handle(this, smtpLine)) {
+            session.setAuthenticationHandler(null);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkIsCanceled(String smtpLine) {
+        return CANCEL_COMMAND.equals(smtpLine);
     }
 
     /**
