@@ -1,6 +1,8 @@
 package com.postalbear.smtp;
 
 import com.postalbear.smtp.auth.AuthenticationHandlerFactory;
+import com.postalbear.smtp.data.DataHandlerFactory;
+import com.postalbear.smtp.grizzly.data.GrizzlyDataHandlerFactory;
 import org.apache.commons.lang3.Validate;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 
@@ -20,6 +22,7 @@ public class SmtpServerConfiguration {
     private AuthenticationHandlerFactory authenticationFactory;
     private boolean authenticationEnforced;
     //
+    private DataHandlerFactory dataHandlerFactory = new GrizzlyDataHandlerFactory();
     private SmtpTransactionHandlerFactory handlerFactory;
     private int maxMessageSize;
     private int maxRecipients;
@@ -65,6 +68,13 @@ public class SmtpServerConfiguration {
      */
     public SmtpTransactionHandlerFactory getHandlerFactory() {
         return handlerFactory;
+    }
+
+    /**
+     * @return instance of DataHandlerFactory to create handlers for fetching
+     */
+    public DataHandlerFactory getDataHandlerFactory() {
+        return dataHandlerFactory;
     }
 
     /**

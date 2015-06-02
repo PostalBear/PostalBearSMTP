@@ -3,9 +3,9 @@ package com.postalbear.smtp.grizzly.processor;
 import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.command.Command;
 import com.postalbear.smtp.command.CommandRegistry;
+import com.postalbear.smtp.grizzly.GrizzlySmtpSession;
 import com.postalbear.smtp.grizzly.SmtpInput;
 import com.postalbear.smtp.grizzly.codec.Decoder;
-import com.postalbear.smtp.grizzly.processor.PipeliningProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +32,7 @@ public class PipeliningProcessorTest {
     @Mock
     private SmtpInput smtpInput;
     @Mock
-    private SmtpSession session;
+    private GrizzlySmtpSession session;
     @InjectMocks
     private PipeliningProcessor processor;
 

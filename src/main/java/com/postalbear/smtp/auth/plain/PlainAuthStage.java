@@ -47,5 +47,5 @@ public enum PlainAuthStage implements AuthStage<PlainAuthenticationHandler> {
             handler.handleSecret(stk.nextToken());
             return false;
         }
-    };
+    }
 }

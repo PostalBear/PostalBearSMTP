@@ -1,6 +1,7 @@
 package com.postalbear.smtp.command;
 
 import com.postalbear.smtp.SmtpSession;
+import com.postalbear.smtp.data.DataHandler;
 import com.postalbear.smtp.exception.SmtpException;
 import lombok.NonNull;
 
@@ -32,10 +33,9 @@ public class DataCommand extends BaseCommand {
         if (session.getRecipientsCount() == 0) {
             throw new SmtpException(503, "5.5.1 Invalid command sequence: need RCPT command");
         }
-        session.sendResponse(354, "End data with <CR><LF>.<CR><LF>");
-        session.flush();
 
-        throw new UnsupportedOperationException("Reimplement with NIO approach");
+        DataHandler handler = session.getConfiguration().getDataHandlerFactory().create(session);
+        handler.kickstartData();
     }
 
     /**

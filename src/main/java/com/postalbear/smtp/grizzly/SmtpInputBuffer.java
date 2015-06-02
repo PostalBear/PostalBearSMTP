@@ -3,15 +3,12 @@ package com.postalbear.smtp.grizzly;
 import com.postalbear.smtp.grizzly.codec.Decoder;
 import lombok.NonNull;
 import org.glassfish.grizzly.Buffer;
-import org.glassfish.grizzly.ReadResult;
 import org.glassfish.grizzly.attributes.Attribute;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.memory.BuffersBuffer;
 import org.glassfish.grizzly.memory.CompositeBuffer;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.IOException;
-import java.io.InputStream;
 
 import static org.glassfish.grizzly.attributes.AttributeBuilder.DEFAULT_ATTRIBUTE_BUILDER;
 
@@ -73,14 +70,14 @@ public class SmtpInputBuffer implements SmtpInput {
      * {@inheritDoc}
      */
     public boolean hasEnoughData(Decoder<?> decoder) {
-        return buffer != null && decoder.hasEnoughData(context.getConnection(), buffer);
+        return buffer != null && decoder.hasEnoughData(buffer, context.getConnection());
     }
 
     /**
      * {@inheritDoc}
      */
     public <T> T getData(Decoder<T> decoder) {
-        T result = decoder.getData(context.getConnection(), buffer);
+        T result = decoder.getData(buffer, context.getConnection());
         if (isEmpty()) {
             release(decoder);
         }
@@ -90,38 +87,5 @@ public class SmtpInputBuffer implements SmtpInput {
     private void release(Decoder<?> decoder) {
         decoder.release(context.getConnection());
         buffer = null;
-    }
-
-    @Deprecated
-    private void fillBufferBlocking() throws IOException {
-        ReadResult readResult = context.read();
-        Buffer dataChunk = (Buffer) readResult.getMessage();
-        readResult.recycle();
-        //append data chunk
-        appendMessage(dataChunk);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public InputStream getInputStream() {
-        return new BlockingInputStream();
-    }
-
-    private class BlockingInputStream extends InputStream {
-
-        @Override
-        public int read() throws IOException {
-            if (isEmpty()) {
-                //wait until some data arrive 
-                fillBufferBlocking();
-                //check that Buffer contains data to read
-                if (isEmpty()) {
-                    return -1;
-                }
-            }
-            return buffer.get();
-        }
     }
 }

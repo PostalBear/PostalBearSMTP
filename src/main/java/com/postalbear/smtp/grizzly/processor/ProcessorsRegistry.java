@@ -14,6 +14,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public class ProcessorsRegistry {
 
     private final AuthenticationProcessor authProcessor = new AuthenticationProcessor();
+    private final DataProcessor dataProcessor = new DataProcessor();
     private final PipeliningProcessor defaultProcessor = new PipeliningProcessor(CommandRegistryFactory.create());
 
     /**
@@ -25,6 +26,8 @@ public class ProcessorsRegistry {
     public SmtpProcessor getProcessor(GrizzlySmtpSession session) {
         if (session.getAuthenticationHandler() != null) {
             return authProcessor;
+        } else if (session.getDataHandler() != null) {
+            return dataProcessor;
         }
         return defaultProcessor;
     }

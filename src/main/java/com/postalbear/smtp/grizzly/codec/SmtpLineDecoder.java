@@ -23,7 +23,6 @@ import static org.glassfish.grizzly.attributes.AttributeBuilder.DEFAULT_ATTRIBUT
 public class SmtpLineDecoder implements Decoder<String> {
 
     private static final SmtpLineDecoder INSTANCE = new SmtpLineDecoder();
-    private static final int TERMINATION_BYTES_LENGTH = CRLF.length();
 
     private final Attribute<Integer> offset;
     private final Attribute<Integer> crPosition;
@@ -49,8 +48,8 @@ public class SmtpLineDecoder implements Decoder<String> {
      * {@inheritDoc}
      */
     @Override
-    public boolean hasEnoughData(@NonNull Connection storage, @NonNull Buffer input) {
-        int byteRead = offset.get(storage); //count of previously read bytes
+    public boolean hasEnoughData(@NonNull Buffer input, @NonNull Connection storage) {
+        int byteRead = offset.get(storage);
         for (int i = input.position() + byteRead; i < input.limit(); i++) {
             //try to find CRLF
             if (input.get(i) == CR && !isCrSet(storage)) {
@@ -103,7 +102,7 @@ public class SmtpLineDecoder implements Decoder<String> {
      * {@inheritDoc}
      */
     @Override
-    public String getData(@NonNull Connection storage, @NonNull Buffer input) {
+    public String getData(@NonNull Buffer input, @NonNull Connection storage) {
         if (!isLineTerminatorFound(storage)) {
             throw new IllegalStateException("Method is invoked when no further SmtpLine available");
         }
@@ -114,7 +113,7 @@ public class SmtpLineDecoder implements Decoder<String> {
         String stringMessage = input.toStringContent(SmtpConstants.ASCII_CHARSET);
         //
         input.limit(tmpLimit);
-        input.position(lineTerminatorIndex + TERMINATION_BYTES_LENGTH);
+        input.position(lineTerminatorIndex + CRLF_LENGHT);
         release(storage);
         return stringMessage;
     }

@@ -1,10 +1,9 @@
 package com.postalbear.smtp.grizzly.processor;
 
-import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.command.Command;
 import com.postalbear.smtp.command.CommandRegistry;
+import com.postalbear.smtp.grizzly.GrizzlySmtpSession;
 import com.postalbear.smtp.grizzly.SmtpInput;
-import com.postalbear.smtp.grizzly.codec.Decoder;
 import com.postalbear.smtp.grizzly.codec.SmtpLineDecoder;
 import lombok.NonNull;
 
@@ -17,7 +16,7 @@ import java.io.IOException;
  */
 public class PipeliningProcessor implements SmtpProcessor {
 
-    private final Decoder<String> lineDecoder = SmtpLineDecoder.getInstance();
+    private final SmtpLineDecoder lineDecoder = SmtpLineDecoder.getInstance();
     private CommandRegistry commandRegistry;
 
     /**
@@ -33,7 +32,7 @@ public class PipeliningProcessor implements SmtpProcessor {
      * {@inheritDoc}
      */
     @Override
-    public void process(SmtpInput smtpInput, SmtpSession session) throws IOException {
+    public void process(SmtpInput smtpInput, GrizzlySmtpSession session) throws IOException {
         while (smtpInput.hasEnoughData(lineDecoder)) {
             String smtpLine = smtpInput.getData(lineDecoder);
             Command command = commandRegistry.getCommand(smtpLine);

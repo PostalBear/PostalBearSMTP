@@ -12,5 +12,5 @@ public interface SmtpTransactionHandlerFactory {
      *
      * @return SmtpTransactionHandler
      */
-    public SmtpTransactionHandler getHandler();
+    SmtpTransactionHandler getHandler();
 }

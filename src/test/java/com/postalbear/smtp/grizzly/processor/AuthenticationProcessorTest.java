@@ -1,11 +1,10 @@
 package com.postalbear.smtp.grizzly.processor;
 
-import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.AuthenticationHandler;
 import com.postalbear.smtp.exception.SmtpException;
+import com.postalbear.smtp.grizzly.GrizzlySmtpSession;
 import com.postalbear.smtp.grizzly.SmtpInput;
 import com.postalbear.smtp.grizzly.codec.Decoder;
-import com.postalbear.smtp.grizzly.processor.AuthenticationProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +27,7 @@ public class AuthenticationProcessorTest {
     @Mock
     private SmtpInput smtpInput;
     @Mock
-    private SmtpSession session;
+    private GrizzlySmtpSession session;
     @InjectMocks
     private AuthenticationProcessor processor;
 

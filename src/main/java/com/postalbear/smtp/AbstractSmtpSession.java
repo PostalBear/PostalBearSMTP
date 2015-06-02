@@ -1,6 +1,7 @@
 package com.postalbear.smtp;
 
 import com.postalbear.smtp.auth.AuthenticationHandler;
+import com.postalbear.smtp.data.DataHandler;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.mail.internet.InternetAddress;
@@ -20,10 +21,9 @@ public abstract class AbstractSmtpSession implements SmtpSession {
     //session state
     private String clientHelo;
     private int recipientsCount;
-
     private AuthenticationHandler authenticationHandler;
     private boolean authenticated;
-
+    private DataHandler dataHandler;
     private SmtpTransactionHandler handler;
 
     public AbstractSmtpSession(final ConfigurationProvider configurationProvider) {
@@ -120,16 +120,38 @@ public abstract class AbstractSmtpSession implements SmtpSession {
      * {@inheritDoc}
      */
     @Override
+    public void setDataHandler(DataHandler dataHandler) {
+        this.dataHandler = dataHandler;
+    }
+
+    /**
+     * @return associated instance of DataHandler
+     */
+    public DataHandler getDataHandler() {
+        return dataHandler;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void data(InputStream data) throws IOException {
         handler.data(data);
     }
 
-    public AuthenticationHandler getAuthenticationHandler() {
-        return authenticationHandler;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void setAuthenticationHandler(AuthenticationHandler authenticationHandler) {
         this.authenticationHandler = authenticationHandler;
+    }
+
+    /**
+     * @return associated instance of AuthenticationHandler
+     */
+    public AuthenticationHandler getAuthenticationHandler() {
+        return authenticationHandler;
     }
 
     /**

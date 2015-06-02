@@ -4,8 +4,6 @@ package com.postalbear.smtp.grizzly;
 
 import com.postalbear.smtp.grizzly.codec.Decoder;
 
-import java.io.InputStream;
-
 /**
  * Implementations provide access to SMTP input buffer.
  *
@@ -33,12 +31,4 @@ public interface SmtpInput {
      * @return data chunk
      */
     <T> T getData(Decoder<T> decoder);
-
-    /**
-     * To get raw data from buffer via InputStream.
-     * Quite stupid since NIO framework is used under the hood, but for now it's enough.
-     *
-     * @return stream to access data
-     */
-    InputStream getInputStream();
 }

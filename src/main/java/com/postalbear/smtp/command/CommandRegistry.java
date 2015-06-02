@@ -15,10 +15,10 @@ public interface CommandRegistry {
      * @param smtpLine to parse Command from
      * @return command responsible for handling given line
      */
-    public Command getCommand(String smtpLine) throws SmtpException;
+    Command getCommand(String smtpLine) throws SmtpException;
 
     /**
      * @return set of supported commands.
      */
-    public Set<String> getSupportedCommands();
+    Set<String> getSupportedCommands();
 }

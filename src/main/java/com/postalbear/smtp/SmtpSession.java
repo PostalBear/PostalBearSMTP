@@ -1,6 +1,7 @@
 package com.postalbear.smtp;
 
 import com.postalbear.smtp.auth.AuthenticationHandler;
+import com.postalbear.smtp.data.DataHandler;
 
 /**
  * Interface of SMTP session.
@@ -15,19 +16,23 @@ public interface SmtpSession extends ConfigurationProvider, SmtpTransactionHandl
     boolean isClientHeloDone();
 
     /**
-     * @param authenticationHandler
+     * Associate given AuthenticationHandler with session.
+     *
+     * @param authenticationHandler handler or null
      */
     void setAuthenticationHandler(AuthenticationHandler authenticationHandler);
-
-    /**
-     * @return
-     */
-    AuthenticationHandler getAuthenticationHandler();
 
     /**
      * Marks session as successfully authenticated.
      */
     void setAuthenticated();
+
+    /**
+     * Associate given DataHandler with session.
+     *
+     * @param dataHandler handler or null
+     */
+    void setDataHandler(DataHandler dataHandler);
 
     /**
      * Check that current SMTP session is authenticated.

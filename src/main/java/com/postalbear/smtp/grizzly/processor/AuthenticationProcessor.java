@@ -1,10 +1,9 @@
 package com.postalbear.smtp.grizzly.processor;
 
-import com.postalbear.smtp.SmtpSession;
 import com.postalbear.smtp.auth.AuthenticationHandler;
 import com.postalbear.smtp.exception.SmtpException;
+import com.postalbear.smtp.grizzly.GrizzlySmtpSession;
 import com.postalbear.smtp.grizzly.SmtpInput;
-import com.postalbear.smtp.grizzly.codec.Decoder;
 import com.postalbear.smtp.grizzly.codec.SmtpLineDecoder;
 
 import java.io.IOException;
@@ -16,13 +15,13 @@ import java.io.IOException;
  */
 public class AuthenticationProcessor implements SmtpProcessor {
 
-    private final Decoder<String> decoder = SmtpLineDecoder.getInstance();
+    private final SmtpLineDecoder decoder = SmtpLineDecoder.getInstance();
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void process(SmtpInput smtpInput, SmtpSession session) throws IOException {
+    public void process(SmtpInput smtpInput, GrizzlySmtpSession session) throws IOException {
         AuthenticationHandler handler = session.getAuthenticationHandler();
         try {
             while (smtpInput.hasEnoughData(decoder)) {
