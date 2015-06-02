@@ -35,7 +35,9 @@ public abstract class AbstractAuthenticationHandler<T extends AuthStage> impleme
      */
     @Override
     public void kickstartAuth(String smtpLine) throws SmtpException {
-        stage.handle(this, smtpLine);
+        if (stage.handle(this, smtpLine)) {
+            session.setAuthenticationHandler(this);
+        }
     }
 
     /**

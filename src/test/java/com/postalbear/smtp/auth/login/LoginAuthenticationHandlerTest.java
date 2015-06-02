@@ -49,6 +49,7 @@ public class LoginAuthenticationHandlerTest {
     public void testWithoutInitialSecret() throws Exception {
         String smtpLine = "AUTH LOGIN";
         handler.kickstartAuth(smtpLine);
+        verify(session).setAuthenticationHandler(eq(handler));
 
         handler.processAuth(LOGIN_ENCRYPTED);
         verify(session).sendResponse(eq(334), eq(LOGIN_REQUEST));
@@ -63,6 +64,7 @@ public class LoginAuthenticationHandlerTest {
     public void testWithInitialSecret() throws Exception {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
         handler.kickstartAuth(smtpLine);
+        verify(session).setAuthenticationHandler(eq(handler));
 
         handler.processAuth(PASSWORD_ENCRYPTED);
         verify(session).sendResponse(eq(334), eq("UGFzc3dvcmQ6"));
@@ -72,8 +74,9 @@ public class LoginAuthenticationHandlerTest {
 
     @Test
     public void testCanceled() throws Exception {
-        String smtpLine = "AUTH PLAIN";
+        String smtpLine = "AUTH LOGIN";
         handler.kickstartAuth(smtpLine);
+        verify(session).setAuthenticationHandler(eq(handler));
 
         handler.processAuth(CANCEL_COMMAND);
         verify(session).sendResponse(eq(501), eq("Authentication canceled by client."));
@@ -98,6 +101,7 @@ public class LoginAuthenticationHandlerTest {
     public void testWithIncorrectPasswordFormat() throws Exception {
         String smtpLine = "AUTH LOGIN " + LOGIN_ENCRYPTED;
         handler.kickstartAuth(smtpLine);
+        verify(session).setAuthenticationHandler(eq(handler));
 
         try {
             handler.processAuth("=AAA==");

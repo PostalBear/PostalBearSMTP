@@ -47,6 +47,7 @@ public class PlainAuthenticationHandlerTest {
         String smtpLine = "AUTH PLAIN " + secret;
 
         handler.kickstartAuth(smtpLine);
+        verify(session, never()).setAuthenticationHandler(eq(handler));
         verify(validator).validateCredentials(eq("login"), eq("password"));
         verify(session).setAuthenticated();
     }
@@ -55,6 +56,7 @@ public class PlainAuthenticationHandlerTest {
     public void testWithoutInitialSecret() throws Exception {
         String smtpLine = "AUTH PLAIN";
         handler.kickstartAuth(smtpLine);
+        verify(session).setAuthenticationHandler(eq(handler));
 
         String secret = Base64.getEncoder().encodeToString(("authorization" + NUL + "login" + NUL + "password").getBytes());
         handler.processAuth(secret);
@@ -67,6 +69,7 @@ public class PlainAuthenticationHandlerTest {
     public void testCanceled() throws Exception {
         String smtpLine = "AUTH PLAIN";
         handler.kickstartAuth(smtpLine);
+        verify(session).setAuthenticationHandler(eq(handler));
 
         handler.processAuth(CANCEL_COMMAND);
         verify(session).sendResponse(eq(501), eq("Authentication canceled by client."));
@@ -93,7 +96,6 @@ public class PlainAuthenticationHandlerTest {
         String smtpLine = "AUTH PLAIN =AAA==";
         try {
             handler.kickstartAuth(smtpLine);
-            fail("SmtpException expected");
         } catch (SmtpException ex) {
             assertEquals(501, ex.getResponseCode());
             assertEquals("5.5.2 Invalid command argument, not a valid Base64 string", ex.getResponseMessage());
@@ -105,11 +107,10 @@ public class PlainAuthenticationHandlerTest {
     @Test(expected = SmtpException.class)
     public void testInvalidCredentials() throws Exception {
         when(validator.validateCredentials(eq("login"), eq("password"))).thenReturn(false);
-        String secret = Base64.getEncoder().encodeToString(("authoritation" + NUL + "login" + NUL + "password").getBytes());
+        String secret = Base64.getEncoder().encodeToString(("authorization" + NUL + "login" + NUL + "password").getBytes());
         String smtpLine = "AUTH PLAIN " + secret;
         try {
             handler.kickstartAuth(smtpLine);
-            fail("SmtpException expected");
         } catch (SmtpException ex) {
             assertEquals(535, ex.getResponseCode());
             assertEquals("5.7.8 Authentication failure, invalid credentials", ex.getResponseMessage());
