@@ -40,6 +40,7 @@ public class EhloCommand extends BaseCommand {
 
         session.sendResponseAsString(250 + HYPHEN + session.getConfiguration().getHostName());
         session.sendResponseAsString(250 + HYPHEN + "8BITMIME");
+        session.sendResponseAsString(250 + HYPHEN + "PIPELINING");
 
         if (session.getConfiguration().isStartTlsEnabled()) {
             session.sendResponseAsString(250 + HYPHEN + "STARTTLS");

@@ -56,6 +56,7 @@ public class EhloCommandTest {
 
         verify(session).sendResponseAsString(eq("250-localhost"));
         verify(session).sendResponseAsString(eq("250-8BITMIME"));
+        verify(session).sendResponseAsString(eq("250-PIPELINING"));
         verify(session).sendResponse(eq(250), eq("OK"));
     }
 
@@ -71,6 +72,7 @@ public class EhloCommandTest {
         verify(session).sendResponseAsString(eq("250-localhost"));
         verify(session).sendResponseAsString(eq("250-8BITMIME"));
         verify(session).sendResponseAsString(eq("250-STARTTLS"));
+        verify(session).sendResponseAsString(eq("250-PIPELINING"));
         verify(session).sendResponse(eq(250), eq("OK"));
     }
 
@@ -86,6 +88,7 @@ public class EhloCommandTest {
         verify(session).sendResponseAsString(eq("250-localhost"));
         verify(session).sendResponseAsString(eq("250-8BITMIME"));
         verify(session).sendResponseAsString(eq("250-SIZE 100"));
+        verify(session).sendResponseAsString(eq("250-PIPELINING"));
         verify(session).sendResponse(eq(250), eq("OK"));
     }
 
