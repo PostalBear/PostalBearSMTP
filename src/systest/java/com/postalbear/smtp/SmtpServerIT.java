@@ -23,6 +23,6 @@ public class SmtpServerIT extends AbstractServerIT {
         message.setEnvelopeFrom(sender.toString());
         sendMessage(session, message, recipient);
 
-        assertMessageReceived();
+        assertFirstSmtpTransaction();
     }
 }

@@ -46,7 +46,7 @@ public class TransportEncryptionIT extends AbstractServerIT {
         message.setEnvelopeFrom(sender.toString());
 
         sendMessage(session, message, recipient);
-        assertMessageReceived();
+        assertFirstSmtpTransaction();
     }
 
     @Test
@@ -65,7 +65,7 @@ public class TransportEncryptionIT extends AbstractServerIT {
         message.setEnvelopeFrom(sender.toString());
 
         sendMessage(session, message, recipient);
-        assertMessageReceived();
+        assertFirstSmtpTransaction();
     }
 
     private Properties getSSLSessionProperties(String protocol) throws Exception {

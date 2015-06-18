@@ -7,6 +7,7 @@ import com.postalbear.smtp.grizzly.codec.MessageDecoder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -17,16 +18,18 @@ import static org.mockito.Mockito.*;
  * @author Grigory Fadeev.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DataProcessorTest {
+public class MessageReceivingProcessorTest {
 
     @Mock
     private SmtpInput smtpInput;
     @Mock
     private GrizzlySmtpSession session;
     @Mock
+    private SmtpProcessor nextProcessor;
+    @Mock
     private DataHandler dataHandler;
-
-    private DataProcessor dataProcessor = new DataProcessor();
+    @InjectMocks
+    private MessageReceivingProcessor messageReceivingProcessor;
 
     @Before
     public void setUp() throws Exception {
@@ -35,9 +38,10 @@ public class DataProcessorTest {
 
     @Test
     public void testProcessIncompleteMessage() throws Exception {
-        dataProcessor.process(smtpInput, session);
+        messageReceivingProcessor.process(smtpInput, session);
 
         verify(dataHandler, never()).processData(any(byte[].class));
+        verify(nextProcessor).process(eq(smtpInput), eq(session));
     }
 
     @Test
@@ -46,7 +50,8 @@ public class DataProcessorTest {
         when(smtpInput.hasEnoughData(any(MessageDecoder.class))).thenReturn(true, false);
         when(smtpInput.getData(any(MessageDecoder.class))).thenReturn(expectedDataChunk);
 
-        dataProcessor.process(smtpInput, session);
+        messageReceivingProcessor.process(smtpInput, session);
         verify(dataHandler).processData(same(expectedDataChunk));
+        verify(nextProcessor).process(eq(smtpInput), eq(session));
     }
 }

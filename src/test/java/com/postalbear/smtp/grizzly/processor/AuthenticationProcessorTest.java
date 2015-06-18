@@ -28,6 +28,8 @@ public class AuthenticationProcessorTest {
     private SmtpInput smtpInput;
     @Mock
     private GrizzlySmtpSession session;
+    @Mock
+    private SmtpProcessor nextProcessor;
     @InjectMocks
     private AuthenticationProcessor processor;
 
@@ -44,12 +46,14 @@ public class AuthenticationProcessorTest {
 
         processor.process(smtpInput, session);
         verify(handler, only()).processAuth(eq("auth"));
+        verify(nextProcessor).process(eq(smtpInput), eq(session));
     }
 
     @Test
     public void testProcessWithEmptySmtpInput() throws Exception {
         processor.process(smtpInput, session);
         verifyZeroInteractions(handler);
+        verify(nextProcessor).process(eq(smtpInput), eq(session));
     }
 
     @Test(expected = SmtpException.class)
@@ -60,6 +64,7 @@ public class AuthenticationProcessorTest {
             processor.process(smtpInput, session);
         } catch (SmtpException ex) {
             verify(session).setAuthenticationHandler(Matchers.isNull(AuthenticationHandler.class));
+            verifyZeroInteractions(nextProcessor);
             throw ex;
         }
     }

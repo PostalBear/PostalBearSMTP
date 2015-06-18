@@ -58,7 +58,7 @@ public class AuthenticationIT extends AbstractServerIT {
         sendMessage(session, message, recipient);
 
         verify(validator).validateCredentials(eq(LOGIN), eq(PASSWORD));
-        assertMessageReceived();
+        assertFirstSmtpTransaction();
     }
 
     @Test
@@ -80,7 +80,7 @@ public class AuthenticationIT extends AbstractServerIT {
         sendMessage(session, message, recipient);
 
         verify(validator).validateCredentials(eq(LOGIN), eq(PASSWORD));
-        assertMessageReceived();
+        assertFirstSmtpTransaction();
     }
 
     @Test(expected = SMTPSendFailedException.class)

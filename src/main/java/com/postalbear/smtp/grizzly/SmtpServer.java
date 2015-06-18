@@ -2,7 +2,7 @@ package com.postalbear.smtp.grizzly;
 
 import com.postalbear.smtp.ConfigurationProvider;
 import com.postalbear.smtp.SmtpServerConfiguration;
-import com.postalbear.smtp.grizzly.processor.ProcessorsRegistry;
+import com.postalbear.smtp.command.CommandRegistryFactory;
 import org.apache.commons.lang3.Validate;
 import org.glassfish.grizzly.filterchain.*;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
@@ -52,8 +52,7 @@ public class SmtpServer implements ConfigurationProvider {
 
         smtpSessionProvider = new SmtpSessionProvider(this);
         sessionStarterFilter = new SessionStarterFilter(smtpSessionProvider);
-        smtpFilter = new SmtpFilter(smtpSessionProvider,
-                                    new ProcessorsRegistry());
+        smtpFilter = new SmtpFilter(smtpSessionProvider, CommandRegistryFactory.create());
         //assemble filter chain
         filterChainBuilder.add(transportFilter);
         if (configuration.getSslConfig() != null) {

@@ -9,29 +9,42 @@ import com.postalbear.smtp.grizzly.codec.SmtpLineDecoder;
 import java.io.IOException;
 
 /**
- * Redirects available SMTP lines to authentication handler linked with session.
+ * Performs authentication procedure, if one is in progress, in NIO way.
  *
  * @author Grigory Fadeev.
  */
 public class AuthenticationProcessor implements SmtpProcessor {
 
     private final SmtpLineDecoder decoder = SmtpLineDecoder.getInstance();
+    private final SmtpProcessor next;
+
+    /**
+     * Constructs instance of AuthenticationProcessor class.
+     *
+     * @param next processor in chain
+     */
+    public AuthenticationProcessor(SmtpProcessor next) {
+        this.next = next;
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void process(SmtpInput smtpInput, GrizzlySmtpSession session) throws IOException {
-        AuthenticationHandler handler = session.getAuthenticationHandler();
-        try {
-            while (smtpInput.hasEnoughData(decoder)) {
-                if (!handler.processAuth(smtpInput.getData(decoder))) {
-                    return;
-                }
+        if (isAuthenticationInProgress(session)) {
+            AuthenticationHandler handler = session.getAuthenticationHandler();
+            try {
+                while (smtpInput.hasEnoughData(decoder) && handler.processAuth(smtpInput.getData(decoder))) ;
+            } catch (SmtpException ex) {
+                session.setAuthenticationHandler(null);
+                throw ex;
             }
-        } catch (SmtpException ex) {
-            session.setAuthenticationHandler(null);
-            throw ex;
         }
+        next.process(smtpInput, session);
+    }
+
+    private boolean isAuthenticationInProgress(GrizzlySmtpSession session) {
+        return session.getAuthenticationHandler() != null;
     }
 }

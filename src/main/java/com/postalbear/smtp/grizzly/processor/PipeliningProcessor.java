@@ -10,7 +10,7 @@ import lombok.NonNull;
 import java.io.IOException;
 
 /**
- * Reads available SMTP lines and redirect to appropriate command for further processing.
+ * Reads available SMTP lines and invokes corresponding command for further processing.
  *
  * @author Grigory Fadeev
  */
